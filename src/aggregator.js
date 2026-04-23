@@ -30,12 +30,16 @@ async function aggregate() {
   };
 
   // 2. Ollama Integration for "Today's News" Summary
-  const sites = data.todaysNews.map(s => s.site).join(", ");
-  const newsContext = data.todaysNews
-    .map(s => `${s.site}:\n${s.items.map(i => `- ${i.title}`).join("\n")}`)
-    .join("\n\n");
+  const ollamaUrl = process.env.OLLAMA_URL;
+  const ollamaModel = process.env.OLLAMA_MODEL || 'llama3';
 
-  const prompt = `Here is the scraped content from today's news sites (${sites}). 
+  if (ollamaUrl) {
+    const sites = data.todaysNews.map(s => s.site).join(", ");
+    const newsContext = data.todaysNews
+      .map(s => `${s.site}:\n${s.items.map(i => `- ${i.title}`).join("\n")}`)
+      .join("\n\n");
+
+    const prompt = `Here is the scraped content from today's news sites (${sites}). 
 Please summarize it by recency. Start with "Today's news from your sites: ${sites}...". 
 Then summarize bullet point highlights for each site in that section.
 Output the summary as HTML (use <p>, <ul>, <li> tags).
@@ -43,26 +47,28 @@ Output the summary as HTML (use <p>, <ul>, <li> tags).
 Content:
 ${newsContext}`;
 
-  try {
-    // Attempt to call local Ollama instance
-    // Note: 'host.docker.internal' requires Docker Compose 'extra_hosts' mapping on Linux
-    const response = await fetch('http://host.docker.internal:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama3',
-        prompt: prompt,
-        stream: false
-      })
-    });
+    try {
+      console.log(`[Aggregator] Requesting summary from Ollama at ${ollamaUrl}...`);
+      const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: ollamaModel,
+          prompt: prompt,
+          stream: false
+        })
+      });
 
-    if (response.ok) {
-      const result = await response.json();
-      data.summary = result.response;
-      console.log("[Aggregator] Ollama summary generated.");
+      if (response.ok) {
+        const result = await response.json();
+        data.summary = result.response;
+        console.log("[Aggregator] Ollama summary generated.");
+      } else {
+        console.warn(`[Aggregator] Ollama returned status: ${response.status}`);
+      }
+    } catch (err) {
+      console.warn("[Aggregator] Ollama connection failed. Skipping summary.", err.message);
     }
-  } catch (err) {
-    console.warn("[Aggregator] Ollama connection failed or not configured. Skipping summary.");
   }
 
   // 3. Update Cache
