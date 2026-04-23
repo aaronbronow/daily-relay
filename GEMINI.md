@@ -15,6 +15,7 @@
 
 ## Architectural Patterns
 - **CLI-First Aggregator:** `src/aggregator.js` is designed to be run as a standalone CLI script (via `npm run aggregate`) and triggered by cron.
+- **Multi-Collector Orchestration:** The aggregator uses `Promise.all` to execute multiple collectors concurrently, grouping results by site into a `todaysNews` structure.
 - **Separation of Concerns:** 
   - `collectors/`: Data ingestion.
   - `aggregator.js`: Logic, caching, and rendering.

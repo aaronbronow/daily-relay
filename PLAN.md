@@ -14,9 +14,8 @@
 
 ### Stage 1: Collectors (Ingestion)
 - `src/collectors/mockCollector.js`: Returns Hello World data (Complete).
+- `src/collectors/scraperCollector.js`: Fetches Hacker News top stories via API (Complete).
 - `src/collectors/logCollector.js`: Watches local volumes for job output files.
-- `src/collectors/emailCollector.js`: Connects via IMAP to fetch newsletter bodies.
-- `src/collectors/scraperCollector.js`: Fetches/parses Discord/Slack webhooks or RSS.
 
 ### Stage 2: The Collator (Processing)
 - **Aggregator:** Orchestrates collector execution, caches data in `data/cache.json`, and renders the briefing (Complete).
