@@ -16,8 +16,8 @@ COPY entrypoint.sh ./
 RUN mkdir -p data public
 
 # Setup Crontab
-# Run aggregator every minute for testing/demo purposes
-RUN echo "* * * * * cd /app && /usr/local/bin/npm run aggregate >> /var/log/cron.log 2>&1" > /etc/crontabs/root
+# Run aggregator every hour at the top of the hour
+RUN echo "0 * * * * cd /app && /usr/local/bin/npm run aggregate >> /var/log/cron.log 2>&1" > /etc/crontabs/root
 
 # Create log file for cron
 RUN touch /var/log/cron.log

@@ -28,6 +28,11 @@
         }
         h2 { color: #222; border-left: 4px solid #007bff; padding-left: 10px; }
         h3 { color: #444; margin-top: 1.5rem; }
+        hr {
+            border: 0;
+            border-top: 1px solid #ddd;
+            margin: 2rem 0;
+        }
         ul { padding-left: 1.5rem; }
         li { margin-bottom: 0.5rem; }
         a { color: #007bff; text-decoration: none; }
@@ -71,6 +76,9 @@
                     <%- briefing.summary %>
                 </div>
             <% } %>
+
+            <hr>
+            <h2>Sources</h2>
 
             <% briefing.todaysNews.forEach(siteData => { %>
                 <div class="site-group">

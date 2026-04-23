@@ -8,7 +8,7 @@
 - **Containerization:** Docker + Docker Compose (Node:20-Alpine)
 - **Networking:** Access via Tailscale / host networking (`network_mode: host`)
 - **Templating:** EJS (Embedded JavaScript templates)
-- **Libraries:** `express`, `ejs`, `fs-promises`, `node-cron` (replaced by OS-level `crontab`)
+- **Libraries:** `express`, `ejs`, `fs-promises`, `node-cron` (replaced by OS-level `crontab`), `marked` (Markdown parsing)
 
 ## 3. Component Architecture
 
@@ -19,7 +19,7 @@
 
 ### Stage 2: The Collator (Processing)
 - **Aggregator:** Orchestrates collector execution, caches data in `data/cache.json`, and renders the briefing (Complete).
-- **Narrator (Optional):** Sends text to a local Ollama container via host networking for prose summarization (Hook implemented).
+- **Narrator (Optional):** Sends text to a local Ollama container via host networking for prose summarization. Includes state management via versioning (`YYYYMMDD.HHMM`) to avoid redundant API calls (Complete).
 - **Generator:** Uses `EJS` to inject data into `src/templates/briefing.ejs` (Complete).
 
 ### Stage 3: The Publisher (Delivery)
@@ -35,12 +35,17 @@
 - [x] Create basic EJS template with semantic HTML5 for TTS.
 - [x] Implement initial aggregation/server/scheduling.
 
-### Phase 2: Real Implementation
+### Phase 2: State Management & Real Scrapers (Complete)
+- [x] Implement state management via `YYYYMMDD.HHMM` versioning.
+- [x] Update cron schedule to run hourly.
+- [x] Implement Hacker News scraper using native `fetch`.
+
+### Phase 3: Accessibility & Collectors
 - [ ] Build `logCollector.js` using `fs.readFile`.
 - [ ] Build `emailCollector.js` using `imap-simple`.
 - [ ] Create volume mappings for Unraid logs (`/mnt/user/logs`).
 
-### Phase 3: Accessibility & Refinement
+### Phase 4: Refinement
 - [ ] Optimize CSS for mobile "Reader Mode."
 - [ ] Ensure Tailscale visibility for the Docker container's port.
 - [ ] Test "Listen to this page" on mobile Chrome.

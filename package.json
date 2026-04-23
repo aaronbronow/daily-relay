@@ -23,6 +23,7 @@
   "homepage": "https://github.com/aaronbronow/daily-relay#readme",
   "dependencies": {
     "ejs": "^5.0.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "marked": "^18.0.2"
   }
 }
