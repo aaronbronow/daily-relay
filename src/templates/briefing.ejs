@@ -17,14 +17,32 @@
             border-bottom: 2px solid #eee;
             margin-bottom: 2rem;
         }
+        section {
+            margin-bottom: 2.5rem;
+        }
         article {
             background: #f9f9f9;
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        h2 { color: #222; border-left: 4px solid #007bff; padding-left: 10px; }
+        h3 { color: #444; margin-top: 1.5rem; }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .summary {
+            font-style: italic;
+            background: #e9ecef;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
         footer {
-            margin-top: 2rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
             font-size: 0.8rem;
             color: #777;
         }
@@ -37,13 +55,42 @@
     </header>
 
     <main>
-        <article>
-            <p><%= briefing.content %></p>
-        </article>
+        <!-- Intro / Status Brief -->
+        <section id="status">
+            <article>
+                <p><%= briefing.brief %></p>
+            </article>
+        </section>
+
+        <!-- Today's News Section -->
+        <section id="todays-news" aria-labelledby="news-heading">
+            <h2 id="news-heading">Today's News</h2>
+            
+            <% if (briefing.summary) { %>
+                <div class="summary">
+                    <%- briefing.summary %>
+                </div>
+            <% } %>
+
+            <% briefing.todaysNews.forEach(siteData => { %>
+                <div class="site-group">
+                    <h3><%= siteData.site %></h3>
+                    <ul>
+                        <% siteData.items.forEach(item => { %>
+                            <li>
+                                <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer">
+                                    <%= item.title %>
+                                </a>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% }) %>
+        </section>
     </main>
 
     <footer>
-        <p>Source: <%= briefing.source %> | daily-relay</p>
+        <p>daily-relay | Semantic briefing for TTS and Agents</p>
     </footer>
 
     <script>

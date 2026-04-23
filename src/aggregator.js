@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const ejs = require('ejs');
 const { collect: mockCollector } = require('./collectors/mockCollector');
+const { collect: scraperCollector } = require('./collectors/scraperCollector');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 const TEMPLATE_FILE = path.join(__dirname, './templates/briefing.ejs');
@@ -15,33 +16,58 @@ async function aggregate() {
   console.log(`[Aggregator] Starting at ${new Date().toISOString()}`);
 
   // 1. Run Collectors
-  const data = await mockCollector();
+  const [mockData, scraperData] = await Promise.all([
+    mockCollector(),
+    scraperCollector()
+  ]);
 
-  // 2. Update Cache
+  const data = {
+    title: "Daily Briefing",
+    timestamp: new Date().toISOString(),
+    brief: mockData.content, // From the mock collector
+    todaysNews: [scraperData], // Array of scraper results
+    summary: null // Placeholder for Ollama summary
+  };
+
+  // 2. Ollama Integration for "Today's News" Summary
+  const sites = data.todaysNews.map(s => s.site).join(", ");
+  const newsContext = data.todaysNews
+    .map(s => `${s.site}:\n${s.items.map(i => `- ${i.title}`).join("\n")}`)
+    .join("\n\n");
+
+  const prompt = `Here is the scraped content from today's news sites (${sites}). 
+Please summarize it by recency. Start with "Today's news from your sites: ${sites}...". 
+Then summarize bullet point highlights for each site in that section.
+Output the summary as HTML (use <p>, <ul>, <li> tags).
+
+Content:
+${newsContext}`;
+
+  try {
+    // Attempt to call local Ollama instance
+    // Note: 'host.docker.internal' requires Docker Compose 'extra_hosts' mapping on Linux
+    const response = await fetch('http://host.docker.internal:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3',
+        prompt: prompt,
+        stream: false
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      data.summary = result.response;
+      console.log("[Aggregator] Ollama summary generated.");
+    }
+  } catch (err) {
+    console.warn("[Aggregator] Ollama connection failed or not configured. Skipping summary.");
+  }
+
+  // 3. Update Cache
   await fs.writeFile(CACHE_FILE, JSON.stringify(data, null, 2));
   console.log(`[Aggregator] Cache updated: ${CACHE_FILE}`);
-
-  // 3. Ollama Integration Hook (Optional Summarization)
-  /*
-  // Example of calling an Ollama instance on the host machine:
-  const prompt = `Summarize the following for a daily briefing: ${data.content}`;
-  try {
-      // Use 'host.docker.internal' for Docker Desktop on Mac/Windows, or the host's Tailscale/LAN IP for Linux.
-      const response = await fetch('http://host.docker.internal:11434/api/generate', {
-          method: 'POST',
-          body: JSON.stringify({
-              model: 'llama3', // or your preferred model
-              prompt: prompt,
-              stream: false
-          })
-      });
-      const result = await response.json();
-      data.content = result.response;
-      console.log("[Aggregator] Prose summarization complete via Ollama.");
-  } catch (err) {
-      console.warn("[Aggregator] Ollama connection failed. Falling back to raw content.");
-  }
-  */
 
   // 4. Render Briefing
   try {
