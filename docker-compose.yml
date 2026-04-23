@@ -1,0 +1,10 @@
+services:
+  daily-relay:
+    build:
+      context: .
+      network: host
+    network_mode: host
+    volumes:
+      - ./data:/app/data
+      - ./public:/app/public
+    restart: always

@@ -1,0 +1,28 @@
+{
+  "name": "daily-relay",
+  "version": "1.0.0",
+  "description": "A self-hosted news aggregator with collectors for email, web scraping, and log dumps that collates a one-pager designed to be read aloud by an agent.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "collect": "node src/aggregator.js",
+    "aggregate": "node src/aggregator.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaronbronow/daily-relay.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aaronbronow/daily-relay/issues"
+  },
+  "homepage": "https://github.com/aaronbronow/daily-relay#readme",
+  "dependencies": {
+    "ejs": "^5.0.2",
+    "express": "^5.2.1"
+  }
+}

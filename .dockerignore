@@ -1,0 +1,9 @@
+node_modules
+data
+public/index.html
+.git
+.gitignore
+GEMINI.md
+PLAN.md
+README.md
+LICENSE
