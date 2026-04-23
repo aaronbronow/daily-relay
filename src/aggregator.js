@@ -3,6 +3,7 @@ const path = require('path');
 const ejs = require('ejs');
 const { collect: mockCollector } = require('./collectors/mockCollector');
 const { collect: scraperCollector } = require('./collectors/scraperCollector');
+const { formatRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 const TEMPLATE_FILE = path.join(__dirname, './templates/briefing.ejs');
@@ -23,7 +24,7 @@ async function aggregate() {
 
   const data = {
     title: "Daily Briefing",
-    timestamp: new Date().toISOString(),
+    timestamp: formatRelativeDate(new Date()),
     brief: mockData.content, // From the mock collector
     todaysNews: [scraperData], // Array of scraper results
     summary: null // Placeholder for Ollama summary
