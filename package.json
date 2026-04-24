@@ -24,7 +24,9 @@
   "dependencies": {
     "ejs": "^5.0.2",
     "express": "^5.2.1",
+    "imap-simple": "^5.1.0",
     "js-yaml": "^4.1.1",
+    "mailparser": "^3.9.8",
     "marked": "^18.0.2",
     "rss-parser": "^3.13.0"
   }

@@ -1,30 +1,40 @@
 # daily-relay
 
-A minimalist, self-hosted conduit for collating technical noise (logs, newsletters, chat) into a single, semantic HTML page optimized for "Listen to this page" (TTS) and AI Agents.
+A minimalist, self-hosted news aggregator that collates logs, newsletters, and web content into a single, semantic HTML page optimized for "Listen to this page" (TTS) and AI Agents.
+
+## Features
+
+- **Multi-Source Support:** Hacker News API, any RSS/Atom feed, and Gmail (via IMAP).
+- **AI Summarization:** Individual prose summaries for every source via a local Ollama instance.
+- **Resilient State Management:** Automatically carries forward last known good data and summaries if a collector fails or times out.
+- **Dynamic Configuration:** Manage your sources on the fly via `sources.yaml`.
+- **Accessibility Optimized:** Structured with semantic HTML5 and optimized for Chrome's "Reading Mode" and TTS agents.
+- **Auto-Refresh:** Browser updates automatically via Server-Sent Events (SSE) whenever a new briefing is ready.
 
 ## Quick Start
 
-To build and start the aggregator in the background:
-
-```bash
-docker compose up --build -d
-```
-
-- **Access the Briefing:** Open `http://localhost:3000` in Google Chrome.
-- **Listen:** Use Chrome's "Listen to this page" feature.
-- **Auto-Refresh:** The page automatically reloads whenever a new briefing is generated.
+1.  **Configure Sources:** Edit `sources.yaml` to add your news links and email folders.
+2.  **Set Credentials:** Update `.env` with your `OLLAMA_URL` and email credentials.
+3.  **Deploy:**
+    ```bash
+    docker compose up --build -d
+    ```
+4.  **Access:** Open `http://localhost:3000` in Google Chrome.
 
 ## Technical Architecture
 
-- **Collectors:** Ingest data from various sources (currently using `mockCollector`).
-- **Aggregator:** Orchestrates collection, caches data in `data/cache.json`, and renders the HTML briefing.
-- **Publisher:** A Node.js (Express) server that serves the briefing and manages Server-Sent Events (SSE) for auto-refresh.
-- **Scheduling:** Uses OS-level `crontab` inside the Alpine container for periodic updates.
-- **Networking:** Utilizes `network_mode: host` for seamless integration with Tailscale and local services like Ollama.
+-   **Aggregator:** Runs as a CLI tool (triggered hourly via cron) to fetch data sequentially and hit the Ollama API for summaries.
+-   **Publisher:** A lightweight Node.js (Express) server optimized for static delivery and live-reloading.
+-   **State:** Persistent cache stored in `data/cache.json` using a `YYYYMMDD.HHMM` versioning scheme to prevent redundant AI calls.
+-   **Networking:** Uses `network_mode: host` for seamless integration with Tailscale and local services.
 
 ## Development
 
-- **Scripts:**
-  - `npm start`: Starts the Express server.
-  - `npm run aggregate`: Manually triggers the collection and rendering process.
-- **Ollama Integration:** The `src/aggregator.js` contains hooks to connect to a host-based Ollama instance via `host.docker.internal`.
+-   **Manually Trigger Aggregation:**
+    ```bash
+    docker exec daily-relay-daily-relay-1 npm run aggregate
+    ```
+-   **View Logs:**
+    ```bash
+    tail -f /var/log/cron.log
+    ```

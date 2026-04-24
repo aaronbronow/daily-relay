@@ -44,6 +44,22 @@
             border-radius: 5px;
             margin-bottom: 1.5rem;
         }
+        .summary ul { margin: 0; padding-left: 1.2rem; }
+        .summary li { margin-bottom: 0.5rem; }
+        
+        aside {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 2px solid #eee;
+            color: #666;
+        }
+        details summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+        
         footer {
             margin-top: 3rem;
             padding-top: 1rem;
@@ -67,22 +83,46 @@
             </article>
         </section>
 
+        <!-- Email Updates Section -->
+        <% if (briefing.emailUpdates && briefing.emailUpdates.length > 0) { %>
+            <section id="email-updates" aria-labelledby="email-heading">
+                <h2 id="email-heading">Email Updates</h2>
+                
+                <% briefing.emailUpdates.forEach(siteData => { %>
+                    <% if (briefing.summaries[siteData.site]) { %>
+                        <div class="summary">
+                            <%- briefing.summaries[siteData.site] %>
+                        </div>
+                    <% } %>
+                <% }) %>
+
+                <p><a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">&rarr; Open Gmail</a></p>
+            </section>
+        <% } %>
+
         <!-- Today's News Section -->
-        <section id="todays-news" aria-labelledby="news-heading">
-            <h2 id="news-heading">Today's News</h2>
-            
-            <% if (briefing.summary) { %>
-                <div class="summary">
-                    <%- briefing.summary %>
-                </div>
-            <% } %>
+        <% if (briefing.todaysNews && briefing.todaysNews.length > 0) { %>
+            <section id="todays-news" aria-labelledby="news-heading">
+                <h2 id="news-heading">Today's News</h2>
+                
+                <% briefing.todaysNews.forEach(siteData => { %>
+                    <% if (briefing.summaries[siteData.site]) { %>
+                        <div class="summary">
+                            <%- briefing.summaries[siteData.site] %>
+                        </div>
+                    <% } %>
+                <% }) %>
+            </section>
+        <% } %>
+    </main>
 
-            <hr>
-            <h2>Sources</h2>
-
+    <!-- Sources Section (Hiding from Reading Mode by placing outside <main>) -->
+    <aside aria-label="Sources" aria-hidden="true">
+        <details>
+            <summary>View Source Links</summary>
             <% briefing.todaysNews.forEach(siteData => { %>
                 <div class="site-group">
-                    <h3><%= siteData.site %></h3>
+                    <h4><%= siteData.site %></h4>
                     <ul>
                         <% siteData.items.forEach(item => { %>
                             <li>
@@ -94,8 +134,8 @@
                     </ul>
                 </div>
             <% }) %>
-        </section>
-    </main>
+        </details>
+    </aside>
 
     <footer>
         <p>daily-relay | Semantic briefing for TTS and Agents</p>

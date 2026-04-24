@@ -17,20 +17,24 @@
 
 ## Architectural Patterns
 - **CLI-First Aggregator:** `src/aggregator.js` is designed to be run as a standalone CLI script (via `npm run aggregate`) and triggered by cron.
-- **Multi-Collector Orchestration:** The aggregator uses `Promise.all` to execute multiple collectors concurrently, grouping results by site into a `todaysNews` structure.
-- **State Management:** Uses a version string (`YYYYMMDD.HHMM`) to track aggregation runs. If the version in the cache matches the current minute, re-summarization via Ollama is skipped.
+- **Sequential Collector Execution:** The aggregator executes collectors sequentially (rather than in parallel) to ensure stability and avoid socket/concurrency issues, especially with sensitive protocols like IMAP.
+- **Dynamic Configuration:** Sources are managed via `sources.yaml`, mounted as a volume for live host-side updates. Supported types: `hackernews`, `rss`, `imap`.
+- **State Management & Fallbacks:** Uses a version string (`YYYYMMDD.HHMM`) to skip redundant AI calls within the same minute. If a collector fails (timeout/error), the aggregator carries forward the last successful data and summary from `cache.json` to ensure UI stability.
 - **Separation of Concerns:** 
-  - `collectors/`: Data ingestion.
-  - `aggregator.js`: Logic, caching, and rendering.
+  - `collectors/`: Data ingestion modules.
+  - `aggregator.js`: Orchestration, fallback logic, and LLM interfacing.
   - `server.js`: Static file delivery and live-reloading.
 
 ## Development Mandates
 - **Host Networking:** Always ensure `docker-compose.yml` uses `network_mode: host` and the `build` block uses `network: host`.
 - **Semantic HTML:** The briefing template MUST use standard HTML5 semantic tags (`<main>`, `<article>`) to ensure compatibility with mobile "Listen to this page" features.
+- **Accessibility:** Secondary content (like raw source links) should be placed outside the `<main>` tag (e.g., in `<aside>`) and wrapped in `<details>` to prevent TTS agents from reading them aloud.
 - **Persistence:** Use the `data/` volume for caching collected data (`cache.json`).
-- **Scheduling:** When adding new collectors or tasks, prefer adding them to the `aggregator.js` orchestration or the `crontab`.
 
 ## Session Learnings
 - **Bridge Network Issues:** Alpine containers may have DNS/Connectivity issues on some host bridge networks; switching to `network_mode: host` resolved `npm install` and server accessibility problems.
-- **Aggregator as CLI:** Decoupling the aggregator from the server lifecycle allows for more reliable scheduling via the OS.
 - **Markdown for LLMs:** Requesting Markdown from LLMs and parsing it to HTML locally is more reliable and token-efficient than requesting raw HTML.
+- **LLM Prompt Compliance:** Using XML-style tags (e.g., `<instructions>`, `<content>`) and explicit "DO NOT summarize these instructions" rules significantly reduces hallucination and improves structural compliance in Ollama.
+- **IMAP Resilience:** IMAP connections are prone to hanging or socket resets (ECONNRESET) during frequent manual testing. Implementing hard safety timeouts and fetching only headers/small snippets (1KB) is essential for stability.
+- **Collector Fallbacks:** Implementing a mechanism to carry forward cached items and summaries when a collector fails ensures the briefing remains populated and stable for the user.
+- **Timezone Synchronization:** Correct Node.js timezone handling in Alpine requires both mounting `/etc/localtime` AND installing the `tzdata` package.

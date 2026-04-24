@@ -7,3 +7,15 @@ sources:
     type: "rss"
     url: "https://ubuntu.com/security/notices/rss.xml"
     limit: 5
+  - name: "Gmail Updates"
+    type: "imap"
+    host: "imap.gmail.com"
+    port: 993
+    tls: true
+    tlsOptions:
+      rejectUnauthorized: false
+    user_env: "IMAP_USER"
+    pass_env: "IMAP_PASS"
+    folder: "INBOX"
+    gmail_raw: "category:updates newer_than:1d"
+    limit: 10
