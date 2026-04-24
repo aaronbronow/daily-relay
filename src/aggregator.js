@@ -1,12 +1,15 @@
 const fs = require('fs').promises;
 const path = require('path');
 const ejs = require('ejs');
+const yaml = require('js-yaml');
 const { marked } = require('marked');
 const { collect: mockCollector } = require('./collectors/mockCollector');
-const { collect: scraperCollector } = require('./collectors/scraperCollector');
+const { collect: hnCollector } = require('./collectors/hnCollector');
+const { collect: rssCollector } = require('./collectors/rssCollector');
 const { formatRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
+const SOURCES_FILE = path.join(__dirname, '../sources.yaml');
 const TEMPLATE_FILE = path.join(__dirname, './templates/briefing.ejs');
 const PUBLIC_INDEX = path.join(__dirname, '../public/index.html');
 
@@ -40,10 +43,23 @@ async function aggregate() {
     // Ignore if file doesn't exist or is invalid
   }
 
-  // 2. Run Collectors
-  const [mockData, scraperData] = await Promise.all([
+  // 2. Load Sources from YAML
+  let sourcesConfig = { sources: [] };
+  try {
+    const yamlContent = await fs.readFile(SOURCES_FILE, 'utf8');
+    sourcesConfig = yaml.load(yamlContent);
+  } catch (err) {
+    console.warn("[Aggregator] sources.yaml not found or invalid. Using defaults.", err.message);
+  }
+
+  // 3. Run Collectors
+  const [mockData, ...newsResults] = await Promise.all([
     mockCollector(),
-    scraperCollector()
+    ...sourcesConfig.sources.map(source => {
+      if (source.type === 'hackernews') return hnCollector(source);
+      if (source.type === 'rss') return rssCollector(source);
+      return Promise.resolve({ site: source.name, items: [], error: 'Unknown collector type' });
+    })
   ]);
 
   const data = {
@@ -51,11 +67,11 @@ async function aggregate() {
     timestamp: formatRelativeDate(new Date()),
     version: runVersion,
     brief: mockData.content, 
-    todaysNews: [scraperData],
+    todaysNews: newsResults.filter(r => r.items.length > 0),
     summary: null
   };
 
-  // 3. Conditional Ollama Integration
+  // 4. Conditional Ollama Integration (Per-Site)
   const ollamaUrl = process.env.OLLAMA_URL;
   const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
@@ -65,63 +81,59 @@ async function aggregate() {
       console.log(`[Aggregator] Version match (${runVersion}). Reusing cached summary.`);
       data.summary = cachedData.summary;
     } else {
-      const sites = data.todaysNews.map(s => s.site).join(", ");
-      const newsContext = data.todaysNews
-        .map(s => `SITE: ${s.site}\nHEADLINES:\n${s.items.map(i => `- ${i.title}`).join("\n")}`)
-        .join("\n\n---\n\n");
+      console.log(`[Aggregator] Requesting per-site summaries from Ollama...`);
+      
+      const summaries = [];
+      for (const siteData of data.todaysNews) {
+        const prompt = `You are a professional briefing assistant. Summarize the following news headlines from ${siteData.site}.
 
-      const prompt = `You are a professional briefing assistant. Your task is to summarize news headlines grouped by source site.
+CRITICAL INSTRUCTIONS:
+1. Output ONLY valid Markdown.
+2. DO NOT include any conversational preamble.
+3. Start your output EXACTLY with an h3 heading: ### Today's News from ${siteData.site}:
+4. Provide a bulleted list of 3-5 concise, one-sentence summaries of the top stories.
+5. DO NOT use headlines as site names. Only use ${siteData.site}.
 
-      <instructions>
-      1. Output ONLY valid Markdown.
-      2. DO NOT include any conversational preamble.
-      3. Start your output EXACTLY with: ### Today's news from your sites: ${sites}...
-      4. For EACH site in the <input_data>, create a section:
-      a. Bold site name: **[Site Name]**
-      b. Bulleted list of 3-5 concise, one-sentence summaries of the associated headlines.
-      5. ONLY use site names provided in <input_data>. DO NOT treat headlines as site names.
-      6. DO NOT use any example data in your final output.
-      </instructions>
+Content:
+${siteData.items.map(i => `- ${i.title}`).join("\n")}`;
 
-      <input_data>
-      ${newsContext}
-      </input_data>
+        try {
+          const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: ollamaModel,
+              prompt: prompt,
+              stream: false
+            })
+          });
 
-      Summary:`;      try {
-        console.log(`[Aggregator] Requesting fresh summary from Ollama at ${ollamaUrl}...`);
-        const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: ollamaModel,
-            prompt: prompt,
-            stream: false
-          })
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          let markdown = result.response;
-          
-          // Clean up accidental markdown code blocks
-          markdown = markdown.replace(/^```(markdown)?\n/i, '').replace(/\n```$/i, '');
-          
-          data.summary = await marked.parse(markdown);
-          console.log("[Aggregator] Ollama summary generated.");
-        } else {
-          console.warn(`[Aggregator] Ollama returned status: ${response.status}`);
+          if (response.ok) {
+            const result = await response.json();
+            let markdown = result.response;
+            // Clean up accidental markdown code blocks
+            markdown = markdown.replace(/^```(markdown)?\n/i, '').replace(/\n```$/i, '');
+            summaries.push(markdown);
+            console.log(`[Aggregator] Summary generated for ${siteData.site}.`);
+          } else {
+            console.warn(`[Aggregator] Ollama returned status ${response.status} for ${siteData.site}`);
+          }
+        } catch (err) {
+          console.warn(`[Aggregator] Ollama call failed for ${siteData.site}:`, err.message);
         }
-      } catch (err) {
-        console.warn("[Aggregator] Ollama connection failed. Skipping summary.", err.message);
+      }
+
+      if (summaries.length > 0) {
+        data.summary = await marked.parse(summaries.join("\n\n"));
       }
     }
   }
 
-  // 4. Update Cache
+  // 5. Update Cache
   await fs.writeFile(CACHE_FILE, JSON.stringify(data, null, 2));
   console.log(`[Aggregator] Cache updated: ${CACHE_FILE}`);
 
-  // 5. Render Briefing
+  // 6. Render Briefing
   try {
     const html = await ejs.renderFile(TEMPLATE_FILE, { briefing: data });
     await fs.writeFile(PUBLIC_INDEX, html);

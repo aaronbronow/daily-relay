@@ -1,0 +1,9 @@
+sources:
+  - name: "Hacker News"
+    type: "hackernews"
+    url: "https://hacker-news.firebaseio.com/v0/topstories.json"
+    limit: 10
+  - name: "Ubuntu Security Notices"
+    type: "rss"
+    url: "https://ubuntu.com/security/notices/rss.xml"
+    limit: 5

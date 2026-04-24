@@ -19,6 +19,9 @@ RUN mkdir -p data public
 # Run aggregator every hour at the top of the hour
 RUN echo "0 * * * * cd /app && /usr/local/bin/npm run aggregate >> /var/log/cron.log 2>&1" > /etc/crontabs/root
 
+# Install tzdata for correct timezone handling
+RUN apk add --no-cache tzdata
+
 # Create log file for cron
 RUN touch /var/log/cron.log
 
