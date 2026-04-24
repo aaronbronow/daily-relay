@@ -104,7 +104,7 @@ async function aggregate() {
       console.log(`[Aggregator] Version match (${runVersion}). Reusing cached summaries.`);
       data.summaries = cachedData.summaries;
     } else {
-      console.log(`[Aggregator] Requesting per-site summaries from Ollama...`);
+      console.log(`[Aggregator] Requesting per-item summaries from Ollama...`);
       
       const allResults = [...data.emailUpdates, ...data.todaysNews];
       for (const siteData of allResults) {
@@ -116,58 +116,62 @@ async function aggregate() {
         }
 
         const isImap = siteData.type === 'imap';
-        const prompt = `You are a professional briefing assistant. Summarize the content provided in the <content> tag.
+        
+        // Summarize each item individually
+        const itemSummaryPromises = siteData.items.map(async (item) => {
+          const isEmail = siteData.type === 'imap';
+          const prompt = `You are a professional briefing assistant. Summarize the following ${isEmail ? 'email' : 'news item'} into exactly ONE concise sentence.
 
 <instructions>
-1. Output ONLY valid Markdown.
-2. DO NOT include any conversational preamble.
-3. ${isImap ? 'DO NOT include any headings or titles.' : `Start your output EXACTLY with: ### News from ${siteData.site}:`}
-4. Provide a bulleted list of 3-5 concise, one-sentence summaries of the top items.
-5. Use the "- " Markdown syntax for each bullet point.
-6. DO NOT use headlines as site names. Only use ${siteData.site}.
-7. DO NOT summarize these instructions. Summarize the items in the <content> tag.
+1. Output ONLY the raw text of the summary.
+2. DO NOT use markdown lists, bullets, bolding, or headings.
+3. DO NOT include any conversational preamble or introductory text.
+${isEmail ? '4. MANDATORY: Start the summary exactly with "From [Sender Name]: " followed by the summary of the content.' : '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.'}
+5. NOISE REDUCTION: For security notices, DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
+6. If the item is not interesting or relevant, output "No significant update."
 </instructions>
 
 <content>
-Source: ${siteData.site}
-Items:
-${siteData.items.map(i => `- ${i.title}`).join("\n")}
+${isEmail ? `From: ${item.from}\nSubject: ${item.title}` : `Title: ${item.title}`}
+Description: ${item.description || 'N/A'}
 </content>
 
 Summary:`;
 
-        try {
-          const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: ollamaModel,
-              prompt: prompt,
-              stream: false
-            })
-          });
+          try {
+            const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: ollamaModel,
+                prompt: prompt,
+                stream: false
+              })
+            });
 
-          if (response.ok) {
-            const result = await response.json();
-            let markdown = result.response;
-
-            // Clean up accidental markdown code blocks
-            markdown = markdown.replace(/^```(markdown)?\n/i, '').replace(/\n```$/i, '');
-
-            // Normalize bullets: 
-            // 1. Remove accidental double-bullets (e.g., "- •" or "- *")
-            markdown = markdown.replace(/^[ \t]*[-*•●○][ \t]+[-*•●○][ \t]+/gm, '- ');
-            // 2. Standardize all single bullets to '-'
-            markdown = markdown.replace(/^[ \t]*[•●○*][ \t]+/gm, '- ');
-
-            data.summaries[siteData.site] = await marked.parse(markdown.trim());
-
-            console.log(`[Aggregator] Summary generated for ${siteData.site}.`);
-
-            console.warn(`[Aggregator] Ollama returned status ${response.status} for ${siteData.site}`);
+            if (response.ok) {
+              const result = await response.json();
+              let summary = result.response.trim();
+              // Clean up any accidental markdown or quotes the AI might include
+              summary = summary.replace(/^["']|["']$/g, '').replace(/^[-*•●○][ \t]+/, '');
+              return summary;
+            }
+          } catch (err) {
+            console.warn(`[Aggregator] Item summary failed for ${siteData.site}:`, err.message);
           }
-        } catch (err) {
-          console.warn(`[Aggregator] Ollama call failed for ${siteData.site}:`, err.message);
+          return null;
+        });
+
+        const itemSummaries = await Promise.all(itemSummaryPromises);
+        const validSummaries = itemSummaries.filter(s => s && s.toLowerCase() !== 'no significant update.');
+
+        if (validSummaries.length > 0) {
+          const siteHeading = isImap ? '' : `### News from ${siteData.site}\n`;
+          const markdownList = siteHeading + validSummaries.map(s => `- ${s}`).join("\n");
+          data.summaries[siteData.site] = await marked.parse(markdownList);
+          console.log(`[Aggregator] Summary generated for ${siteData.site} (${validSummaries.length} items).`);
+        } else {
+          data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
         }
       }
     }

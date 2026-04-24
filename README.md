@@ -4,12 +4,13 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 
 ## Features
 
-- **Multi-Source Support:** Hacker News API, any RSS/Atom feed, and Gmail (via IMAP).
-- **AI Summarization:** Individual prose summaries for every source via a local Ollama instance.
+- **Multi-Source Support:** Hacker News API, RSS/Atom feeds, and Gmail (via IMAP).
+- **Per-Item AI Summarization:** Individual, focused prose summaries for every single news item and email using a local Ollama instance.
+- **Context-Aware Briefings:** Utilizes RSS descriptions and email body snippets to provide accurate, high-quality summaries.
 - **Resilient State Management:** Automatically carries forward last known good data and summaries if a collector fails or times out.
-- **Dynamic Configuration:** Manage your sources on the fly via `sources.yaml`.
-- **Accessibility Optimized:** Structured with semantic HTML5 and optimized for Chrome's "Reading Mode" and TTS agents.
-- **Auto-Refresh:** Browser updates automatically via Server-Sent Events (SSE) whenever a new briefing is ready.
+- **Accessibility Optimized:** Optimized for Chrome's "Reading Mode" and TTS agents (links are hidden from automated readers).
+- **Dynamic Configuration:** Manage your sources live via `sources.yaml`.
+- **Auto-Refresh:** Browser updates automatically via Server-Sent Events (SSE).
 
 ## Quick Start
 
@@ -23,10 +24,10 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 
 ## Technical Architecture
 
--   **Aggregator:** Runs as a CLI tool (triggered hourly via cron) to fetch data sequentially and hit the Ollama API for summaries.
--   **Publisher:** A lightweight Node.js (Express) server optimized for static delivery and live-reloading.
--   **State:** Persistent cache stored in `data/cache.json` using a `YYYYMMDD.HHMM` versioning scheme to prevent redundant AI calls.
--   **Networking:** Uses `network_mode: host` for seamless integration with Tailscale and local services.
+-   **Aggregator:** Sequential CLI tool (triggered hourly via cron) that orchestrates individual AI calls per item for maximum focus.
+-   **Publisher:** Lightweight Node.js server for static delivery and live-reloading.
+-   **State:** Persistent cache in `data/cache.json` with fallback logic to prevent UI blanking on network errors.
+-   **Networking:** Host networking mode for seamless Tailscale and Ollama integration.
 
 ## Development
 
@@ -34,7 +35,7 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
     ```bash
     docker exec daily-relay-daily-relay-1 npm run aggregate
     ```
--   **View Logs:**
+-   **Test Prompts:**
     ```bash
-    tail -f /var/log/cron.log
+    docker exec daily-relay-daily-relay-1 node tests/promptTester.js
     ```

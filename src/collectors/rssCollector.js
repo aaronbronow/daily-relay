@@ -14,11 +14,18 @@ async function collect(config) {
 
   try {
     const feed = await parser.parseURL(URL);
-    const items = feed.items.slice(0, LIMIT).map(item => ({
-      title: item.title,
-      url: item.link,
-      timestamp: item.isoDate || item.pubDate || new Date().toISOString()
-    }));
+    const items = feed.items.slice(0, LIMIT).map(item => {
+      // Clean up description (strip HTML tags and extra whitespace)
+      let description = (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (description.length > 500) description = description.substring(0, 500) + '...';
+
+      return {
+        title: item.title,
+        url: item.link,
+        description: description,
+        timestamp: item.isoDate || item.pubDate || new Date().toISOString()
+      };
+    });
 
     return {
       site: SITE_NAME,

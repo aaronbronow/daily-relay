@@ -9,6 +9,7 @@ services:
       - ./data:/app/data
       - ./public:/app/public
       - ./src:/app/src
+      - ./tests:/app/tests
       - ./sources.yaml:/app/sources.yaml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro

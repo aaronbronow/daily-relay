@@ -19,6 +19,7 @@
 - **CLI-First Aggregator:** `src/aggregator.js` is designed to be run as a standalone CLI script (via `npm run aggregate`) and triggered by cron.
 - **Sequential Collector Execution:** The aggregator executes collectors sequentially (rather than in parallel) to ensure stability and avoid socket/concurrency issues, especially with sensitive protocols like IMAP.
 - **Dynamic Configuration:** Sources are managed via `sources.yaml`, mounted as a volume for live host-side updates. Supported types: `hackernews`, `rss`, `imap`.
+- **Item-Level Summarization:** The aggregator makes a separate Ollama API call for every individual news or email item. This maximizes AI focus on the specific content (including descriptions/snippets) and results in higher-quality, more accurate summaries.
 - **State Management & Fallbacks:** Uses a version string (`YYYYMMDD.HHMM`) to skip redundant AI calls within the same minute. If a collector fails (timeout/error), the aggregator carries forward the last successful data and summary from `cache.json` to ensure UI stability.
 - **Separation of Concerns:** 
   - `collectors/`: Data ingestion modules.
@@ -32,9 +33,9 @@
 - **Persistence:** Use the `data/` volume for caching collected data (`cache.json`).
 
 ## Session Learnings
-- **Bridge Network Issues:** Alpine containers may have DNS/Connectivity issues on some host bridge networks; switching to `network_mode: host` resolved `npm install` and server accessibility problems.
-- **Markdown for LLMs:** Requesting Markdown from LLMs and parsing it to HTML locally is more reliable and token-efficient than requesting raw HTML.
-- **LLM Prompt Compliance:** Using XML-style tags (e.g., `<instructions>`, `<content>`) and explicit "DO NOT summarize these instructions" rules significantly reduces hallucination and improves structural compliance in Ollama.
-- **IMAP Resilience:** IMAP connections are prone to hanging or socket resets (ECONNRESET) during frequent manual testing. Implementing hard safety timeouts and fetching only headers/small snippets (1KB) is essential for stability.
-- **Collector Fallbacks:** Implementing a mechanism to carry forward cached items and summaries when a collector fails ensures the briefing remains populated and stable for the user.
+- **Item-Level vs. Site-Level:** Making separate LLM calls for every item is slower but significantly more accurate. It prevents the model from getting confused by multiple different topics and allows it to utilize long item descriptions without context drift.
+- **RSS Context:** Including the `description` field from RSS feeds provides the AI with the necessary context to summarize accurately, rather than just repeating or guessing based on the title.
+- **IMAP Resilience:** IMAP connections are prone to hanging or socket resets (ECONNRESET). Implementing hard safety timeouts, sequential execution, and fetching only headers/full-bodies with clean `mailparser` decoding is essential for stability.
+- **LLM Prompt Compliance:** Using XML-style tags (e.g., `<instructions>`, `<content>`) and explicit "VERBATIM MODE" rules significantly reduces hallucination and improves structural compliance in Ollama.
+- **Reading Mode Optimization:** Reader Mode and TTS agents primarily focus on the `<main>` tag. Moving links to a trailing `<aside>` block and wrapping them in `<details>` successfully prevents them from being read aloud.
 - **Timezone Synchronization:** Correct Node.js timezone handling in Alpine requires both mounting `/etc/localtime` AND installing the `tzdata` package.

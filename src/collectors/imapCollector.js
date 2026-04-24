@@ -23,8 +23,8 @@ async function collect(config) {
     user: IMAP_USER,
     password: IMAP_PASS,
     host: config.host || 'imap.gmail.com',
-    port: config.port || 993,
-    tls: config.tls !== false,
+    port: 993,
+    tls: true,
     tlsOptions: { rejectUnauthorized: false },
     authTimeout: 10000,
     keepalive: false
@@ -51,7 +51,6 @@ async function collect(config) {
         }
 
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        // Use a flat array for search criteria to avoid double-nesting issues
         let searchCriteria = ['ALL'];
         if (config.gmail_raw) {
           searchCriteria = [['X-GM-RAW', config.gmail_raw]];
@@ -67,46 +66,41 @@ async function collect(config) {
             return safeResolve({ site: SITE_NAME, items: [], error: err.message });
           }
 
-          if (uids.length === 0) {
+          if (!uids || uids.length === 0) {
             console.log(`[imapCollector] No messages found for ${SITE_NAME}.`);
             imap.end();
             return safeResolve({ site: SITE_NAME, items: [] });
           }
 
           const targetUids = uids.sort((a, b) => b - a).slice(0, LIMIT);
-          // Fetch both the full header and the first 1KB of the body for a snippet
-          const f = imap.fetch(targetUids, { bodies: ['HEADER', 'TEXT'] });
+          // Fetch full body to allow mailparser to decode correctly
+          const f = imap.fetch(targetUids, { bodies: '' });
 
           f.on('message', (msg) => {
             const p = new Promise((resolveMsg) => {
-              let headerData = null;
-              let bodyData = '';
-
-              msg.on('body', (stream, info) => {
-                let buffer = '';
-                stream.on('data', (chunk) => { buffer += chunk.toString('utf8'); });
-                stream.on('end', () => {
-                  if (info.which === 'HEADER') {
-                    headerData = Imap.parseHeader(buffer);
-                  } else {
-                    bodyData = buffer.substring(0, 500); // Limit snippet size
+              msg.on('body', (stream) => {
+                simpleParser(stream).then(parsed => {
+                  const subject = parsed.subject || '(No Subject)';
+                  const date = parsed.date || new Date();
+                  const from = parsed.from ? (parsed.from.value[0].name || parsed.from.value[0].address) : 'Unknown Sender';
+                  
+                  // Extract a clean text snippet
+                  let snippet = '';
+                  if (parsed.text) {
+                    snippet = parsed.text.substring(0, 500).replace(/\s+/g, ' ').trim();
+                  } else if (parsed.html) {
+                    snippet = parsed.html.replace(/<[^>]*>/g, ' ').substring(0, 500).replace(/\s+/g, ' ').trim();
                   }
-                });
-              });
 
-              msg.once('end', () => {
-                const subject = (headerData && headerData.subject) ? headerData.subject[0] : '(No Subject)';
-                const date = (headerData && headerData.date) ? headerData.date[0] : new Date().toISOString();
-                
-                // Clean up snippet (remove HTML tags if any, though TEXT is usually plain)
-                const snippet = bodyData.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-
-                items.push({
-                  title: `Subject: ${subject} - ${snippet}...`,
-                  url: '',
-                  timestamp: new Date(date).toISOString()
-                });
-                resolveMsg();
+                  items.push({
+                    title: subject,
+                    from: from,
+                    description: snippet,
+                    url: '',
+                    timestamp: date.toISOString()
+                  });
+                }).catch(err => console.error(`[imapCollector] Parse error for message in ${SITE_NAME}:`, err))
+                  .finally(() => resolveMsg());
               });
             });
             messagePromises.push(p);
@@ -114,7 +108,6 @@ async function collect(config) {
 
           f.once('error', (err) => {
             console.error(`[imapCollector] Fetch error for ${SITE_NAME}:`, err);
-            imap.end();
           });
 
           f.once('end', () => {
@@ -138,14 +131,14 @@ async function collect(config) {
 
     imap.connect();
 
-    // 45s safety timeout
+    // 60s safety timeout (parsing full bodies can take a bit longer)
     setTimeout(() => {
       if (!resolved) {
         console.warn(`[imapCollector] Timeout for ${SITE_NAME}.`);
         imap.destroy();
         safeResolve({ site: SITE_NAME, items: items, error: 'Timeout' });
       }
-    }, 45000);
+    }, 60000);
   });
 }
 
