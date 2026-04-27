@@ -20,6 +20,7 @@
 - `src/collectors/seasonCollector.js`: Local YAML parser for the "Holidays of Health" cycle.
 - `src/collectors/motdCollector.js`: Directory-watcher for incoming Ubuntu system health reports.
 - `src/collectors/historyCollector.js`: Wikimedia API client with interest-based LLM filtering (Complete).
+- `src/collectors/tasksCollector.js`: Google Tasks API client for urgent tasks (Complete).
 
 ### Stage 2: The Collator (Processing)
 - **Aggregator:** Orchestrates sequential collector execution and manages resilient fallbacks (Complete).
@@ -60,6 +61,7 @@
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
 - [ ] **Season Collector**: Build `seasonCollector.js` to calculate current week/theme without external APIs.
 - [x] **Curated History**: Build `historyCollector.js` to fetch Wikimedia events and use the "Narrator" with source-level `system_prompt` to generate a prose intro.
+- [x] **Google Tasks**: Build `tasksCollector.js` to fetch and summarize urgent tasks in the prose intro via OAuth2.
 - [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
