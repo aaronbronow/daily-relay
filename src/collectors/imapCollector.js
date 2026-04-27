@@ -32,6 +32,7 @@ async function collect(config) {
 
   return new Promise((resolve) => {
     let resolved = false;
+    let lastError = null;
     const items = [];
     const messagePromises = [];
 
@@ -46,6 +47,7 @@ async function collect(config) {
       imap.openBox(FOLDER, true, (err) => {
         if (err) {
           console.error(`[imapCollector] openBox error for ${SITE_NAME}:`, err);
+          lastError = err.message;
           imap.end();
           return safeResolve({ site: SITE_NAME, items: [], error: err.message });
         }
@@ -119,6 +121,7 @@ async function collect(config) {
               imap.search(searchCriteria, (err, uids) => {
                 if (err) {
                   console.error(`[imapCollector] search error for ${SITE_NAME}:`, err);
+                  lastError = err.message;
                   imap.end();
                   return safeResolve({ site: SITE_NAME, items: [], error: err.message });
                 }
@@ -134,6 +137,7 @@ async function collect(config) {
           imap.search(searchCriteria, (err, uids) => {
             if (err) {
               console.error(`[imapCollector] search error for ${SITE_NAME}:`, err);
+              lastError = err.message;
               imap.end();
               return safeResolve({ site: SITE_NAME, items: [], error: err.message });
             }
@@ -145,6 +149,7 @@ async function collect(config) {
 
     imap.once('error', (err) => {
       console.error(`[imapCollector] connection error for ${SITE_NAME}:`, err);
+      lastError = err.message;
       safeResolve({ site: SITE_NAME, items: [], error: err.message });
     });
 
@@ -152,7 +157,11 @@ async function collect(config) {
       console.log(`[imapCollector] Finished ${SITE_NAME}. Found ${items.length} items.`);
       // Final client-side sort to ensure strictly chronological order regardless of fetch arrival
       const sortedItems = items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      safeResolve({ site: SITE_NAME, items: sortedItems });
+      
+      const result = { site: SITE_NAME, items: sortedItems };
+      if (lastError && items.length === 0) result.error = lastError;
+      
+      safeResolve(result);
     });
 
     imap.connect();

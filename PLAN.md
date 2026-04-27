@@ -54,7 +54,7 @@
 - [x] Refine AI prompt to strip technical noise (USN/CVE) and prevent hallucinations.
 - [x] Implement relative date bucketing for emails (today, yesterday, this week, earlier).
 - [x] Implement server-side IMAP `SORT` with client-side fallback for chronological briefings.
-- [x] Implement explicit "Checked, no updates" status for successful empty scrapes vs. failed fallbacks.
+- [x] Implement explicit "Checked, no updates" (success) vs. "No updates" (failed no cache) status.
 
 ### Phase 5: Seasonal Context & Curated History
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.

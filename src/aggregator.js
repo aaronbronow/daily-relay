@@ -81,6 +81,10 @@ async function aggregate() {
         }
       }
 
+      if (result.error && !result._reused) {
+        result.failedNoCache = true;
+      }
+
       if (!result.error && (!result.items || result.items.length === 0) && !result.rawData) {
         result.empty = true;
       }
@@ -162,7 +166,13 @@ async function aggregate() {
 
         if (siteData.empty) {
           console.log(`[Aggregator] Site ${siteData.site} is empty. Setting 'no updates' summary.`);
-          data.summaries[siteData.site] = isImap ? await marked.parse(`- Email checked, no new updates.`) : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
+          data.summaries[siteData.site] = isImap ? await marked.parse(`- Email checked, no updates.`) : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
+          continue;
+        }
+
+        if (siteData.failedNoCache) {
+          console.log(`[Aggregator] Site ${siteData.site} failed and no cache found. Setting 'no updates' summary.`);
+          data.summaries[siteData.site] = isImap ? await marked.parse(`- No updates.`) : await marked.parse(`### News from ${siteData.site}\n- Connection failed, no updates available.`);
           continue;
         }
 
