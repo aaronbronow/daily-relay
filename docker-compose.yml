@@ -13,4 +13,5 @@ services:
       - ./sources.yaml:/app/sources.yaml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+      - /app/node_modules
     restart: always
