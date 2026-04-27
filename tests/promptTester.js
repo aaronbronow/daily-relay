@@ -4,11 +4,13 @@
  * Usage: OLLAMA_URL=http://... OLLAMA_MODEL=... node tests/promptTester.js
  */
 
+const { getBriefingRelativeDate } = require('../src/utils/formatters');
+
 async function testPrompt() {
-  const ollamaUrl = process.env.OLLAMA_URL || 'http://100.106.38.68:11434';
+  const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
   const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
-  const mockItems = [
+  const mockNewsItems = [
     {
       site: "Hacker News",
       title: "Why I Write (1946)",
@@ -26,11 +28,28 @@ async function testPrompt() {
     }
   ];
 
+  const now = new Date();
+  const mockEmailItems = [
+    {
+      from: "John Doe",
+      title: "Project Update",
+      description: "The project is on track for the release next week. We have finished the major milestones.",
+      timestamp: now.toISOString()
+    },
+    {
+      from: "Github",
+      title: "[Security] Vulnerability found",
+      description: "A vulnerability was found in one of your dependencies. Please update as soon as possible.",
+      timestamp: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  ];
+
   console.log(`--- Starting Item-Level Prompt Test ---`);
   console.log(`Model: ${ollamaModel}`);
   console.log(`URL: ${ollamaUrl}\n`);
 
-  for (const item of mockItems) {
+  console.log(">> Testing News Items...");
+  for (const item of mockNewsItems) {
     const prompt = `You are a professional briefing assistant. Summarize the following news item into exactly ONE concise sentence.
 
 <instructions>
@@ -65,6 +84,57 @@ Summary:`;
         const result = await response.json();
         console.log("DONE");
         console.log(`- ${result.response.trim()}\n`);
+      } else {
+        console.log(`FAILED (${response.status})\n`);
+      }
+    } catch (err) {
+      console.log(`ERROR: ${err.message}\n`);
+    }
+  }
+
+  console.log(">> Testing Email Items...");
+  for (const item of mockEmailItems) {
+    const prompt = `You are a professional briefing assistant. Summarize the following email into exactly ONE concise sentence.
+
+<instructions>
+1. Output ONLY the raw text of the summary.
+2. DO NOT use markdown lists, bullets, bolding, or headings.
+3. DO NOT include any conversational preamble or introductory text.
+4. Summarize the main point of the email clearly and professionally.
+5. NOISE REDUCTION: For security notices, DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
+6. If the item is not interesting or relevant, output "No significant update."
+</instructions>
+
+<content>
+From: ${item.from}
+Subject: ${item.title}
+Description: ${item.description || 'N/A'}
+</content>
+
+Summary:`;
+
+    try {
+      const relativeDate = getBriefingRelativeDate(item.timestamp);
+      process.stdout.write(`Testing [${item.from}, ${relativeDate}]... `);
+      const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: ollamaModel,
+          prompt: prompt,
+          stream: false
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const summary = result.response.trim();
+        if (summary.toLowerCase().includes('no significant update')) {
+          console.log("SKIP (No significant update)");
+        } else {
+          console.log("DONE");
+          console.log(`- From ${item.from}, ${relativeDate}: ${summary}\n`);
+        }
       } else {
         console.log(`FAILED (${response.status})\n`);
       }

@@ -3,11 +3,11 @@ const path = require('path');
 const ejs = require('ejs');
 const yaml = require('js-yaml');
 const { marked } = require('marked');
-const { collect: mockCollector } = require('./collectors/mockCollector');
+const { collect: historyCollector } = require('./collectors/historyCollector');
 const { collect: hnCollector } = require('./collectors/hnCollector');
 const { collect: rssCollector } = require('./collectors/rssCollector');
 const { collect: imapCollector } = require('./collectors/imapCollector');
-const { formatRelativeDate } = require('./utils/formatters');
+const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 const SOURCES_FILE = path.join(__dirname, '../sources.yaml');
@@ -55,7 +55,6 @@ async function aggregate() {
 
   // 3. Run Collectors (Sequentially to avoid socket/IMAP issues)
   console.log("[Aggregator] Running collectors...");
-  const mockData = await mockCollector();
   const newsResults = [];
   
   for (const source of sourcesConfig.sources) {
@@ -64,33 +63,44 @@ async function aggregate() {
       if (source.type === 'hackernews') result = await hnCollector(source);
       else if (source.type === 'rss') result = await rssCollector(source);
       else if (source.type === 'imap') result = await imapCollector(source);
+      else if (source.type === 'history') result = await historyCollector(source);
       else result = { site: source.name, items: [], error: 'Unknown collector type' };
       
-      // Fallback: If fetch failed/empty, try to reuse cached data for this site
-      if ((!result.items || result.items.length === 0) && cachedData) {
-        const cachedSite = [...(cachedData.emailUpdates || []), ...(cachedData.todaysNews || [])]
-          .find(s => s.site === source.name);
+      // Fallback: If fetch failed, try to reuse cached data for this site
+      if (result.error && cachedData) {
+        const allCached = [...(cachedData.emailUpdates || []), ...(cachedData.todaysNews || [])];
+        if (cachedData.history) allCached.push(cachedData.history);
         
-        if (cachedSite && cachedSite.items && cachedSite.items.length > 0) {
-          console.log(`[Aggregator] Collector for ${source.name} returned no results. Falling back to cached data.`);
-          result.items = cachedSite.items;
+        const cachedSite = allCached.find(s => s.site === source.name);
+        
+        if (cachedSite && (cachedSite.items || cachedSite.rawData)) {
+          console.log(`[Aggregator] Collector for ${source.name} failed. Falling back to cached data.`);
+          if (cachedSite.items) result.items = cachedSite.items;
+          if (cachedSite.rawData) result.rawData = cachedSite.rawData;
           result._reused = true;
         }
       }
 
-      newsResults.push({ ...result, type: source.type });
+      if (!result.error && (!result.items || result.items.length === 0) && !result.rawData) {
+        result.empty = true;
+      }
+
+      newsResults.push({ ...result, type: source.type, system_prompt: source.system_prompt });
     } catch (err) {
       console.error(`[Aggregator] Collector failed for ${source.name}:`, err.message);
     }
   }
 
+  const historyResult = newsResults.find(r => r.type === 'history');
+
   const data = {
     title: "Daily Briefing",
     timestamp: formatRelativeDate(new Date()),
     version: runVersion,
-    brief: mockData.content, 
-    emailUpdates: newsResults.filter(r => r.type === 'imap' && r.items.length > 0),
-    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.items.length > 0),
+    brief: "Fetching your historical overview...", 
+    emailUpdates: newsResults.filter(r => r.type === 'imap'),
+    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'history'),
+    history: historyResult,
     summaries: {} // Map of siteName -> htmlSummary
   };
 
@@ -103,19 +113,60 @@ async function aggregate() {
     if (cachedData && cachedData.version === runVersion && cachedData.summaries) {
       console.log(`[Aggregator] Version match (${runVersion}). Reusing cached summaries.`);
       data.summaries = cachedData.summaries;
+      data.brief = cachedData.brief;
     } else {
-      console.log(`[Aggregator] Requesting per-item summaries from Ollama...`);
+      console.log(`[Aggregator] Requesting summaries from Ollama...`);
+
+      // 4a. Process History / Prose Intro
+      if (data.history && data.history.rawData) {
+        const promptChanged = cachedData && cachedData.history && cachedData.history.system_prompt !== data.history.system_prompt;
+        
+        if (data.history._reused && cachedData && cachedData.brief && !promptChanged) {
+          console.log(`[Aggregator] Reusing cached history brief.`);
+          data.brief = cachedData.brief;
+        } else {
+          if (promptChanged) {
+            console.log(`[Aggregator] System prompt changed for history. Re-generating brief...`);
+          } else {
+            console.log(`[Aggregator] Generating conversational history brief...`);
+          }
+          const historyPrompt = `${data.history.system_prompt || 'Summarize these historical events into a conversational paragraph.'}\n\n<content>\n${data.history.rawData}\n</content>\n\nSummary:`;
+          
+          try {
+            const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: ollamaModel,
+                prompt: historyPrompt,
+                stream: false
+              })
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              data.brief = await marked.parse(result.response.trim());
+            }
+          } catch (err) {
+            console.warn(`[Aggregator] History brief generation failed:`, err.message);
+            data.brief = "Historical overview unavailable today.";
+          }
+        }
+      } else {
+        data.brief = "No historical events found for today.";
+      }
       
       const allResults = [...data.emailUpdates, ...data.todaysNews];
       for (const siteData of allResults) {
-        // Site-Level Fallback: If data was reused, reuse the summary too
-        if (siteData._reused && cachedData && cachedData.summaries && cachedData.summaries[siteData.site]) {
-          console.log(`[Aggregator] Reusing cached summary for ${siteData.site}.`);
-          data.summaries[siteData.site] = cachedData.summaries[siteData.site];
+        const isImap = siteData.type === 'imap';
+
+        if (siteData.empty) {
+          console.log(`[Aggregator] Site ${siteData.site} is empty. Setting 'no updates' summary.`);
+          data.summaries[siteData.site] = isImap ? await marked.parse(`- Email checked, no new updates.`) : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
           continue;
         }
 
-        const isImap = siteData.type === 'imap';
+        console.log(`[Aggregator] Processing summaries for ${siteData.site}...`);
         
         // Summarize each item individually
         const itemSummaryPromises = siteData.items.map(async (item) => {
@@ -126,7 +177,7 @@ async function aggregate() {
 1. Output ONLY the raw text of the summary.
 2. DO NOT use markdown lists, bullets, bolding, or headings.
 3. DO NOT include any conversational preamble or introductory text.
-${isEmail ? '4. MANDATORY: Start the summary exactly with "From [Sender Name]: " followed by the summary of the content.' : '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.'}
+${isEmail ? '4. Summarize the main point of the email clearly and professionally.' : '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.'}
 5. NOISE REDUCTION: For security notices, DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
 6. If the item is not interesting or relevant, output "No significant update."
 </instructions>
@@ -154,6 +205,15 @@ Summary:`;
               let summary = result.response.trim();
               // Clean up any accidental markdown or quotes the AI might include
               summary = summary.replace(/^["']|["']$/g, '').replace(/^[-*•●○][ \t]+/, '');
+              
+              if (summary.toLowerCase().includes('no significant update')) {
+                return null;
+              }
+
+              if (isEmail) {
+                const relativeDate = getBriefingRelativeDate(item.timestamp);
+                return `From ${item.from}, ${relativeDate}: ${summary}`;
+              }
               return summary;
             }
           } catch (err) {
@@ -163,7 +223,7 @@ Summary:`;
         });
 
         const itemSummaries = await Promise.all(itemSummaryPromises);
-        const validSummaries = itemSummaries.filter(s => s && s.toLowerCase() !== 'no significant update.');
+        const validSummaries = itemSummaries.filter(s => s !== null);
 
         if (validSummaries.length > 0) {
           const siteHeading = isImap ? '' : `### News from ${siteData.site}\n`;
@@ -171,7 +231,13 @@ Summary:`;
           data.summaries[siteData.site] = await marked.parse(markdownList);
           console.log(`[Aggregator] Summary generated for ${siteData.site} (${validSummaries.length} items).`);
         } else {
-          data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
+          // Fallback to old summary if we have it
+          if (cachedData && cachedData.summaries && cachedData.summaries[siteData.site]) {
+            console.log(`[Aggregator] No new summaries for ${siteData.site}. Reusing old summary.`);
+            data.summaries[siteData.site] = cachedData.summaries[siteData.site];
+          } else {
+            data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
+          }
         }
       }
     }

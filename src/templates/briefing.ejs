@@ -79,12 +79,12 @@
         <!-- Intro / Status Brief -->
         <section id="status">
             <article>
-                <p><%= briefing.brief %></p>
+                <%- briefing.brief %>
             </article>
         </section>
 
         <!-- Email Updates Section -->
-        <% if (briefing.emailUpdates && briefing.emailUpdates.length > 0) { %>
+        <% if (briefing.emailUpdates) { %>
             <section id="email-updates" aria-labelledby="email-heading">
                 <h2 id="email-heading">Email Updates</h2>
                 
@@ -95,13 +95,11 @@
                         </div>
                     <% } %>
                 <% }) %>
-
-                <p><a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">&rarr; Open Gmail</a></p>
             </section>
         <% } %>
 
         <!-- Today's News Section -->
-        <% if (briefing.todaysNews && briefing.todaysNews.length > 0) { %>
+        <% if (briefing.todaysNews) { %>
             <section id="todays-news" aria-labelledby="news-heading">
                 <h2 id="news-heading">Today's News</h2>
                 
@@ -118,6 +116,9 @@
 
     <!-- Sources Section (Hiding from Reading Mode by placing outside <main>) -->
     <aside aria-label="Sources" aria-hidden="true">
+        <% if (briefing.emailUpdates && briefing.emailUpdates.length > 0) { %>
+            <p><a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" style="font-weight: bold;">&rarr; Open Gmail</a></p>
+        <% } %>
         <details>
             <summary>View Source Links</summary>
             <% briefing.todaysNews.forEach(siteData => { %>

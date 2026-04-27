@@ -50,29 +50,24 @@ async function collect(config) {
           return safeResolve({ site: SITE_NAME, items: [], error: err.message });
         }
 
-        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
         let searchCriteria = ['ALL'];
         if (config.gmail_raw) {
           searchCriteria = [['X-GM-RAW', config.gmail_raw]];
         } else {
-          searchCriteria = [['SINCE', yesterday]];
+          searchCriteria = [['SINCE', threeDaysAgo]];
         }
 
         console.log(`[imapCollector] Searching ${SITE_NAME} with:`, JSON.stringify(searchCriteria));
-        imap.search(searchCriteria, (err, uids) => {
-          if (err) {
-            console.error(`[imapCollector] search error for ${SITE_NAME}:`, err);
-            imap.end();
-            return safeResolve({ site: SITE_NAME, items: [], error: err.message });
-          }
-
+        
+        const fetchMessages = (uids) => {
           if (!uids || uids.length === 0) {
             console.log(`[imapCollector] No messages found for ${SITE_NAME}.`);
             imap.end();
             return safeResolve({ site: SITE_NAME, items: [] });
           }
 
-          const targetUids = uids.sort((a, b) => b - a).slice(0, LIMIT);
+          const targetUids = uids.slice(0, LIMIT);
           // Fetch full body to allow mailparser to decode correctly
           const f = imap.fetch(targetUids, { bodies: '' });
 
@@ -115,7 +110,36 @@ async function collect(config) {
               imap.end();
             });
           });
-        });
+        };
+
+        if (imap.serverSupports('SORT')) {
+          imap.sort(['ARRIVAL'], searchCriteria, (err, uids) => {
+            if (err) {
+              console.warn(`[imapCollector] SORT failed for ${SITE_NAME}, falling back to search:`, err.message);
+              imap.search(searchCriteria, (err, uids) => {
+                if (err) {
+                  console.error(`[imapCollector] search error for ${SITE_NAME}:`, err);
+                  imap.end();
+                  return safeResolve({ site: SITE_NAME, items: [], error: err.message });
+                }
+                fetchMessages(uids.sort((a, b) => b - a));
+              });
+            } else {
+              // imap.sort returns UIDs in ascending order by default for some reason, 
+              // but we want recent (highest arrival) first.
+              fetchMessages(uids.reverse());
+            }
+          });
+        } else {
+          imap.search(searchCriteria, (err, uids) => {
+            if (err) {
+              console.error(`[imapCollector] search error for ${SITE_NAME}:`, err);
+              imap.end();
+              return safeResolve({ site: SITE_NAME, items: [], error: err.message });
+            }
+            fetchMessages(uids.sort((a, b) => b - a));
+          });
+        }
       });
     });
 
@@ -126,7 +150,9 @@ async function collect(config) {
 
     imap.once('end', () => {
       console.log(`[imapCollector] Finished ${SITE_NAME}. Found ${items.length} items.`);
-      safeResolve({ site: SITE_NAME, items: items });
+      // Final client-side sort to ensure strictly chronological order regardless of fetch arrival
+      const sortedItems = items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      safeResolve({ site: SITE_NAME, items: sortedItems });
     });
 
     imap.connect();

@@ -17,5 +17,22 @@ sources:
     user_env: "IMAP_USER"
     pass_env: "IMAP_PASS"
     folder: "INBOX"
-    gmail_raw: "category:updates newer_than:1d"
+    gmail_raw: "category:updates newer_than:3d"
     limit: 10
+  - name: "Wikimedia History"
+    type: "history"
+    system_prompt: |
+      You are a wise and thoughtful briefing assistant. Your goal is to curate 1-2 historical events for the current day from the provided raw data.
+      
+      <interests>
+      Photography, Engineering, Pacific Northwest (PNW), Aerospace, and Software History.
+      </interests>
+      
+      <instructions>
+      1. Review the raw historical events provided in <content>.
+      2. Select 1-2 events that align with the listed interests. If none align, select the most globally significant event. Do not mention human tragedies. Prefer no response to a tragic topic.
+      3. Write a single, conversational prose paragraph (1-3 sentences) that highlights these events.
+      4. Establish a positive, curious, and thoughtful tone to start the day.
+      5. DO NOT use markdown lists or headings.
+      6. Output ONLY the raw text of the paragraph.
+      </instructions>
