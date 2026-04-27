@@ -43,3 +43,6 @@
 - **Google OAuth Loopback:** For desktop apps in a remote-dev environment (like VS Code SSH), using `http://127.0.0.1` and binding the local server to `0.0.0.0` is the most robust way to capture authorization codes through an automatic tunnel.
 - **Task-Level Independence:** Explicitly forbidding possessive pronouns (e.g., "their", "his") in LLM prompts is critical when summarizing multiple tasks that share a date, preventing the model from hallucinating relationships between unrelated items.
 - **Cache vs. Status:** Distinguishing between a "Failed Collection" (fallback to cache) and a "Successful Empty Run" (clear cache and report status) ensures the briefing remains accurate and doesn't stale out.
+
+## Technical Debt & Overrides
+- **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.
