@@ -39,3 +39,7 @@
 - **LLM Prompt Compliance:** Using XML-style tags (e.g., `<instructions>`, `<content>`) and explicit "VERBATIM MODE" rules significantly reduces hallucination and improves structural compliance in Ollama.
 - **Reading Mode Optimization:** Reader Mode and TTS agents primarily focus on the `<main>` tag. Moving links to a trailing `<aside>` block and wrapping them in `<details>` successfully prevents them from being read aloud.
 - **Timezone Synchronization:** Correct Node.js timezone handling in Alpine requires both mounting `/etc/localtime` AND installing the `tzdata` package.
+- **Docker Dependency Isolation:** Using an anonymous volume (`- /app/node_modules`) in `docker-compose.yml` ensures that the container uses its own OS-specific dependencies (e.g., native C++ addons) even when the source code is mounted from a different host OS.
+- **Google OAuth Loopback:** For desktop apps in a remote-dev environment (like VS Code SSH), using `http://127.0.0.1` and binding the local server to `0.0.0.0` is the most robust way to capture authorization codes through an automatic tunnel.
+- **Task-Level Independence:** Explicitly forbidding possessive pronouns (e.g., "their", "his") in LLM prompts is critical when summarizing multiple tasks that share a date, preventing the model from hallucinating relationships between unrelated items.
+- **Cache vs. Status:** Distinguishing between a "Failed Collection" (fallback to cache) and a "Successful Empty Run" (clear cache and report status) ensures the briefing remains accurate and doesn't stale out.

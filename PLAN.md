@@ -38,6 +38,7 @@
 - [x] Set up `docker-compose.yml` with host networking and volume mounts.
 - [x] Create basic EJS template with semantic HTML5 for TTS.
 - [x] Implement initial aggregation/server/scheduling.
+- [x] **Refinement**: Optimize Dockerfile with layer caching and anonymous volume for `node_modules` isolation.
 
 ### Phase 2: State Management & Real Scrapers (Complete)
 - [x] Implement state management via `YYYYMMDD.HHMM` versioning.

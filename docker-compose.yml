@@ -13,4 +13,6 @@ services:
       - ./sources.yaml:/app/sources.yaml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+      # This anonymous volume ensures container-built modules aren't overwritten by host files
+      - /app/node_modules
     restart: always
