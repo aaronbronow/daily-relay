@@ -3,11 +3,7 @@ const path = require('path');
 const ejs = require('ejs');
 const yaml = require('js-yaml');
 const { marked } = require('marked');
-try {
-  require('dotenv').config();
-} catch (e) {
-  // dotenv might not be installed in all environments (e.g. Docker with env_file)
-}
+require('dotenv').config();
 const { collect: historyCollector } = require('./collectors/historyCollector');
 const { collect: tasksCollector } = require('./collectors/tasksCollector');
 const { collect: hnCollector } = require('./collectors/hnCollector');
