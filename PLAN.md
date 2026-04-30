@@ -8,7 +8,7 @@
 - **Containerization:** Docker + Docker Compose (Node:20-Alpine)
 - **Networking:** Access via Tailscale / host networking (`network_mode: host`)
 - **Templating:** EJS (Embedded JavaScript templates)
-- **Libraries:** `express`, `ejs`, `marked`, `js-yaml`, `rss-parser`, `imap`, `mailparser`, `dayjs`
+- **Libraries:** `express`, `ejs`, `marked`, `js-yaml`, `rss-parser`, `imap-simple`, `mailparser`, `googleapis`
 
 ## 3. Component Architecture
 
@@ -58,17 +58,19 @@
 - [x] Implement server-side IMAP `SORT` with client-side fallback for chronological briefings.
 - [x] Implement explicit "Checked, no updates" (success) vs. "No updates" (failed no cache) status.
 
-### Phase 5: Seasonal Context & Curated History
+### Phase 5: Seasonal Context & Curated History (In Progress)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
 - [ ] **Season Collector**: Build `seasonCollector.js` to calculate current week/theme without external APIs.
 - [x] **Curated History**: Build `historyCollector.js` to fetch Wikimedia events and use the "Narrator" with source-level `system_prompt` to generate a prose intro.
 - [x] **Google Tasks**: Build `tasksCollector.js` to fetch and summarize urgent tasks in the prose intro via OAuth2.
 - [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
+- [x] **GitHub Releases**: Build `githubCollector.js` to aggregate and summarize high-signal software updates (Complete).
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
 - [ ] **Log Tailer**: Implement `logCollector.js` to extract status from Unraid job output files.
 - [ ] **MOTD Ingestion**: Add Express endpoint `/api/motd/:hostname` to receive remote Ubuntu health reports.
 - [ ] **MOTD Collector**: Build `motdCollector.js` to summarize multi-node update statuses concisely.
+- [x] **Auth Utilities**: Create `src/utils/getGoogleToken.js` for easier OAuth re-authentication (Complete).
 - [ ] **Agent Tags**: Refine HTML with `aria-hidden` on technical timestamps to prevent the TTS agent from reading raw ISO strings.
 
 ### Phase 7: Mobile & Agent Refinement

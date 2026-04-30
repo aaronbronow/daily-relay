@@ -98,6 +98,21 @@
             </section>
         <% } %>
 
+        <!-- GitHub Release Updates Section -->
+        <% if (briefing.githubUpdates && briefing.githubUpdates.length > 0) { %>
+            <section id="github-updates" aria-labelledby="github-heading">
+                <h2 id="github-heading">GitHub Release Updates</h2>
+                
+                <% briefing.githubUpdates.forEach(siteData => { %>
+                    <% if (briefing.summaries[siteData.site]) { %>
+                        <div class="summary">
+                            <%- briefing.summaries[siteData.site] %>
+                        </div>
+                    <% } %>
+                <% }) %>
+            </section>
+        <% } %>
+
         <!-- Today's News Section -->
         <% if (briefing.todaysNews) { %>
             <section id="todays-news" aria-labelledby="news-heading">
@@ -121,7 +136,8 @@
         <% } %>
         <details>
             <summary>View Source Links</summary>
-            <% briefing.todaysNews.forEach(siteData => { %>
+            <% const allSources = [...(briefing.githubUpdates || []), ...(briefing.todaysNews || [])]; %>
+            <% allSources.forEach(siteData => { %>
                 <div class="site-group">
                     <h4><%= siteData.site %></h4>
                     <ul>

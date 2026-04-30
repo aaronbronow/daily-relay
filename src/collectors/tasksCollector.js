@@ -72,11 +72,15 @@ async function collect(config) {
     };
 
   } catch (error) {
-    console.error(`[tasksCollector] Error:`, error.message);
+    let msg = error.message;
+    if (msg.includes('invalid_grant')) {
+      msg = 'invalid_grant (Refresh token expired or revoked. Run node src/utils/getGoogleToken.js to re-authorize.)';
+    }
+    console.error(`[tasksCollector] Error:`, msg);
     return {
       site: SITE_NAME,
       rawData: "",
-      error: error.message
+      error: msg
     };
   }
 }

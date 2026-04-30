@@ -33,7 +33,6 @@
     "rss-parser": "^3.13.0"
   },
   "overrides": {
-    "//": "semver forced to 5.7.2 to fix ReDoS in utf7 (imap dependency)",
     "semver": "^5.7.2"
   }
 }

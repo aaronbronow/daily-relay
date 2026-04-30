@@ -31,11 +31,20 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 
 ## Development
 
--   **Manually Trigger Aggregation:**
+- **Manually Trigger Aggregation:**
     ```bash
+    # Run all collectors
     docker exec daily-relay-daily-relay-1 npm run aggregate
+
+    # Run only a specific collector (use --site or --source to avoid npm flag collisions)
+    # The -- separator is required to pass arguments safely through npm
+    docker exec daily-relay-daily-relay-1 npm run aggregate -- --site "GitHub Releases"
     ```
--   **Test Prompts:**
+- **Re-authorize Google Tasks:**
+    ```bash
+    docker exec -it daily-relay-daily-relay-1 node src/utils/getGoogleToken.js
+    ```
+- **Test Prompts:**
     ```bash
     docker exec daily-relay-daily-relay-1 node tests/promptTester.js
     ```

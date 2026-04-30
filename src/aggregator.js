@@ -13,6 +13,7 @@ const { collect: tasksCollector } = require('./collectors/tasksCollector');
 const { collect: hnCollector } = require('./collectors/hnCollector');
 const { collect: rssCollector } = require('./collectors/rssCollector');
 const { collect: imapCollector } = require('./collectors/imapCollector');
+const { collect: githubCollector } = require('./collectors/githubCollector');
 const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
@@ -59,30 +60,61 @@ async function aggregate() {
     console.warn("[Aggregator] sources.yaml not found or invalid. Using defaults.", err.message);
   }
 
+  // Parse CLI args for skipping/filtering
+  const args = process.argv.slice(2);
+  const onlySources = [];
+  const skipSources = [];
+  for (let i = 0; i < args.length; i++) {
+    // Note: --only and --include are npm config collisions. 
+    // Use --site or --source, or ensure you use the -- separator: npm run aggregate -- --only "Source"
+    if ((args[i] === '--only' || args[i] === '--site' || args[i] === '--source') && args[i+1]) {
+      onlySources.push(args[i+1]); 
+      i++; 
+    }
+    else if (args[i] === '--skip' && args[i+1]) { 
+      skipSources.push(args[i+1]); 
+      i++; 
+    }
+  }
+
   // 3. Run Collectors (Sequentially to avoid socket/IMAP issues)
   console.log("[Aggregator] Running collectors...");
   const newsResults = [];
   
   for (const source of sourcesConfig.sources) {
     let result;
+    
+    const isOnly = onlySources.length > 0 && !onlySources.includes(source.name);
+    const isSkip = skipSources.includes(source.name) || source.skip === true;
+    
     try {
-      if (source.type === 'hackernews') result = await hnCollector(source);
-      else if (source.type === 'rss') result = await rssCollector(source);
-      else if (source.type === 'imap') result = await imapCollector(source);
-      else if (source.type === 'history') result = await historyCollector(source);
-      else if (source.type === 'tasks') result = await tasksCollector(source);
-      else result = { site: source.name, items: [], error: 'Unknown collector type' };
+      if (isOnly || isSkip) {
+        console.log(`[Aggregator] Skipping collector for ${source.name} (using cache if available).`);
+        result = { site: source.name, items: [], error: 'Skipped by config/CLI' };
+      } else {
+        if (source.type === 'hackernews') result = await hnCollector(source);
+        else if (source.type === 'rss') result = await rssCollector(source);
+        else if (source.type === 'imap') result = await imapCollector(source);
+        else if (source.type === 'github') result = await githubCollector(source);
+        else if (source.type === 'history') result = await historyCollector(source);
+        else if (source.type === 'tasks') result = await tasksCollector(source);
+        else result = { site: source.name, items: [], error: 'Unknown collector type' };
+      }
       
-      // Fallback: If fetch failed, try to reuse cached data for this site
+      // Fallback: If fetch failed or was skipped, try to reuse cached data for this site
       if (result.error && cachedData) {
-        const allCached = [...(cachedData.emailUpdates || []), ...(cachedData.todaysNews || [])];
+        const allCached = [...(cachedData.emailUpdates || []), ...(cachedData.todaysNews || []), ...(cachedData.githubUpdates || [])];
         if (cachedData.history) allCached.push(cachedData.history);
         if (cachedData.tasks) allCached.push(cachedData.tasks);
         
         const cachedSite = allCached.find(s => s.site === source.name);
         
         if (cachedSite && (cachedSite.items || cachedSite.rawData)) {
-          console.log(`[Aggregator] Collector for ${source.name} failed. Falling back to cached data.`);
+          if (isOnly || isSkip) {
+            console.log(`[Aggregator] Loaded skipped source ${source.name} from cache.`);
+          } else {
+            console.log(`[Aggregator] Collector for ${source.name} failed. Falling back to cached data.`);
+          }
           if (cachedSite.items) result.items = cachedSite.items;
           if (cachedSite.rawData) result.rawData = cachedSite.rawData;
           result._reused = true;
@@ -112,7 +144,8 @@ async function aggregate() {
     version: runVersion,
     brief: "Fetching your overview...", 
     emailUpdates: newsResults.filter(r => r.type === 'imap'),
-    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'history' && r.type !== 'tasks'),
+    githubUpdates: newsResults.filter(r => r.type === 'github'),
+    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'github' && r.type !== 'history' && r.type !== 'tasks'),
     history: historyResult,
     tasks: tasksResult,
     summaries: {} // Map of siteName -> htmlSummary
@@ -189,7 +222,7 @@ async function aggregate() {
         data.brief = "<p>No updates available for your morning overview.</p>";
       }
       
-      const allResults = [...data.emailUpdates, ...data.todaysNews];
+      const allResults = [...data.emailUpdates, ...data.githubUpdates, ...data.todaysNews];
       for (const siteData of allResults) {
         const isImap = siteData.type === 'imap';
 
@@ -210,13 +243,21 @@ async function aggregate() {
         // Summarize each item individually
         const itemSummaryPromises = siteData.items.map(async (item) => {
           const isEmail = siteData.type === 'imap';
-          const prompt = `You are a professional briefing assistant. Summarize the following ${isEmail ? 'email' : 'news item'} into exactly ONE concise sentence.
+          const isGithub = siteData.type === 'github';
+          
+          let typeLabel = 'news item';
+          if (isEmail) typeLabel = 'email';
+          if (isGithub) typeLabel = 'GitHub release';
+
+          const prompt = `You are a professional briefing assistant. Summarize the following ${typeLabel} into ${isGithub ? 'exactly 2-3 concise prose sentences' : 'exactly ONE concise sentence'}.
 
 <instructions>
 1. Output ONLY the raw text of the summary.
 2. DO NOT use markdown lists, bullets, bolding, or headings.
 3. DO NOT include any conversational preamble or introductory text.
-${isEmail ? '4. Summarize the main point of the email clearly and professionally.' : '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.'}
+${isEmail ? '4. Summarize the main point of the email clearly and professionally.' : ''}
+${isGithub ? '4. Summarize the key features or changes in this release. Focus on what is new or improved.' : ''}
+${(!isEmail && !isGithub) ? '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.' : ''}
 5. NOISE REDUCTION: For security notices, DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
 6. If the item is not interesting or relevant, output "No significant update."
 </instructions>
@@ -253,6 +294,10 @@ Summary:`;
                 const relativeDate = getBriefingRelativeDate(item.timestamp);
                 return `From ${item.from}, ${relativeDate}: ${summary}`;
               }
+              if (isGithub) {
+                const relativeDate = getBriefingRelativeDate(item.timestamp);
+                return `${item.site}, ${item.version}, ${relativeDate}: ${summary}`;
+              }
               return summary;
             }
           } catch (err) {
@@ -265,7 +310,8 @@ Summary:`;
         const validSummaries = itemSummaries.filter(s => s !== null);
 
         if (validSummaries.length > 0) {
-          const siteHeading = isImap ? '' : `### News from ${siteData.site}\n`;
+          const isGithub = siteData.type === 'github';
+          const siteHeading = (isImap || isGithub) ? '' : `### News from ${siteData.site}\n`;
           const markdownList = siteHeading + validSummaries.map(s => `- ${s}`).join("\n");
           data.summaries[siteData.site] = await marked.parse(markdownList);
           console.log(`[Aggregator] Summary generated for ${siteData.site} (${validSummaries.length} items).`);
