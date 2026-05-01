@@ -35,13 +35,14 @@ async function collect(config) {
     // 2. Fetch tasks from all lists
     let allTasks = [];
     for (const list of taskLists) {
+      // Fetch both pending and completed tasks
       const res = await tasksService.tasks.list({
         tasklist: list.id,
-        showCompleted: false,
-        showHidden: false
+        showCompleted: true,
+        showHidden: true
       });
       if (res.data.items) {
-        // Add the list title to each task for better context if needed
+        // Add the list title to each task
         const tasksWithListInfo = res.data.items.map(t => ({ ...t, listTitle: list.title }));
         allTasks = allTasks.concat(tasksWithListInfo);
       }
@@ -53,17 +54,29 @@ async function collect(config) {
 
     const tasks = allTasks;
     const now = new Date();
-    const oneWeekFromNow = new Date();
-    oneWeekFromNow.setDate(now.getDate() + 7);
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    // Normalize dates to start of day for comparison
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Use local YYYY-MM-DD for comparison of all-day tasks
+    const todayStr = now.toLocaleDateString('en-CA'); 
 
     const relevantTasks = tasks.filter(task => {
-      if (!task.due) return true; // Keep tasks with no due date as 'upcoming' or 'pending'
+      // If completed, only keep if completed today
+      if (task.status === 'completed') {
+        if (!task.completed) return false;
+        const completedDate = new Date(task.completed).toLocaleDateString('en-CA');
+        return completedDate === todayStr;
+      }
+
+      if (!task.due) return true;
       
+      const isAllDay = task.due.endsWith('T00:00:00.000Z');
+      if (isAllDay) {
+        const taskDate = task.due.split('T')[0];
+        const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
+        return taskDate <= sevenDaysFromNow;
+      }
+
       const dueDate = new Date(task.due);
-      // Keep if past due or due within 7 days
       return dueDate < oneWeekFromNow;
     });
 
@@ -81,20 +94,20 @@ async function collect(config) {
       let timingInfo = "";
       
       if (task.due) {
-        const dueDate = new Date(task.due);
-        
-        // Google Tasks 'due' is exactly midnight UTC for "all day" tasks.
         const isAllDay = task.due.endsWith('T00:00:00.000Z');
         
-        if (dueDate < startOfToday) {
-          status = "PAST DUE";
-        } else if (dueDate.getTime() === startOfToday.getTime()) {
-          status = "TODAY";
-        }
-        
         if (isAllDay) {
-          timingInfo = `(Due: ${task.due.split('T')[0]}, All Day)`;
+          const taskDate = task.due.split('T')[0];
+          if (taskDate < todayStr) status = "PAST DUE";
+          else if (taskDate === todayStr) status = "TODAY";
+          else status = "Upcoming";
+          timingInfo = `(Due: ${taskDate}, All Day)`;
         } else {
+          const dueDate = new Date(task.due);
+          if (dueDate < now) status = "PAST DUE";
+          else if (dueDate.toLocaleDateString('en-CA') === todayStr) status = "TODAY";
+          else status = "Upcoming";
+          
           const timePart = dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
           timingInfo = `(Due: ${task.due.split('T')[0]} at ${timePart})`;
         }

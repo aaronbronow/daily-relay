@@ -238,7 +238,10 @@ async function aggregate() {
         const todayStr = now.toLocaleDateString('en-CA');
         const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-        const pastDueAndToday = tasks.filter(t => {
+        const pendingTasks = tasks.filter(t => t.status !== 'completed');
+        const completedToday = tasks.filter(t => t.status === 'completed');
+
+        const pastDueAndToday = pendingTasks.filter(t => {
           if (!t.due) return false;
           const isAllDay = t.due.endsWith('T00:00:00.000Z');
           if (isAllDay) {
@@ -247,7 +250,7 @@ async function aggregate() {
           return new Date(t.due) <= endOfToday;
         });
 
-        const futureTasks = tasks.filter(t => {
+        const futureTasks = pendingTasks.filter(t => {
           if (!t.due) return true; // Treat no-due-date as future/pending
           const isAllDay = t.due.endsWith('T00:00:00.000Z');
           if (isAllDay) {
@@ -273,7 +276,9 @@ async function aggregate() {
           return `${allButLast}, and ${getTaskDisplay(list[list.length - 1])}`;
         };
 
-        if (tasks.length === 0) {
+        if (pendingTasks.length === 0 && completedToday.length > 0) {
+          tasksPart = "All tasks for today are completed!";
+        } else if (pendingTasks.length === 0) {
           tasksPart = "You have no tasks due this week.";
         } else {
           const parts = [];
@@ -282,7 +287,10 @@ async function aggregate() {
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
             parts.push(`There ${verb} ${count} ${noun} for today: ${formatTaskList(pastDueAndToday)}.`);
+          } else if (completedToday.length > 0) {
+            parts.push("All tasks for today are completed!");
           }
+
           if (futureTasks.length > 0) {
             const count = futureTasks.length;
             const verb = count === 1 ? "is" : "are";
