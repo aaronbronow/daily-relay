@@ -72,20 +72,42 @@ async function collect(config) {
     }
 
     // Format tasks for the LLM
-    const rawData = relevantTasks.map(task => {
+    const currentDateStr = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const currentTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    let rawData = `Current Date: ${currentDateStr}\nCurrent Time: ${currentTimeStr}\n\n`;
+
+    rawData += relevantTasks.map(task => {
       let status = "Upcoming";
+      let timingInfo = "";
+      
       if (task.due) {
         const dueDate = new Date(task.due);
-        if (dueDate < startOfToday) status = "PAST DUE";
+        
+        // Google Tasks 'due' is exactly midnight UTC for "all day" tasks.
+        const isAllDay = task.due.endsWith('T00:00:00.000Z');
+        
+        if (dueDate < startOfToday) {
+          status = "PAST DUE";
+        } else if (dueDate.getTime() === startOfToday.getTime()) {
+          status = "TODAY";
+        }
+        
+        if (isAllDay) {
+          timingInfo = `(Due: ${task.due.split('T')[0]}, All Day)`;
+        } else {
+          const timePart = dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+          timingInfo = `(Due: ${task.due.split('T')[0]} at ${timePart})`;
+        }
       } else {
         status = "No Due Date";
       }
-      return `[List: ${task.listTitle}] [Status: ${status}] ${task.title}${task.due ? ` (Due: ${task.due.split('T')[0]})` : ''}`;
+      return `[List: ${task.listTitle}] [Status: ${status}] ${task.title} ${timingInfo}`;
     }).join("\n");
 
     return {
       site: SITE_NAME,
-      rawData: rawData
+      rawData: rawData,
+      _tasks: relevantTasks
     };
 
   } catch (error) {

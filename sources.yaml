@@ -129,19 +129,6 @@ sources:
       </instructions>
   - name: "Google Tasks"
     type: "tasks"
-    system_prompt: |
-      You are a helpful personal assistant. Your goal is to summarize the user's tasks into a conversational 2-3 sentence paragraph.
-      
-      <instructions>
-      1. Review the raw tasks provided in <content>.
-      2. If the content indicates no tasks or is empty, output EXACTLY "No tasks."
-      3. Otherwise, summarize the tasks in a conversational prose paragraph.
-      4. Group and mention the tasks in order of urgency: PAST DUE first, then Upcoming (next few days), and Future (later in the week).
-      5. INDEPENDENCE: Treat every task as a completely separate and independent item. DO NOT use possessive pronouns (like "their", "his", "her") to link distinct tasks. DO NOT assume relationships between tasks or their subjects, even if they share the same due date or names.
-      6. Establish an encouraging and organized tone.
-      7. DO NOT use markdown lists, bullet points, or headings.
-      8. Output ONLY the raw text of the paragraph.
-      </instructions>
   - name: "GitHub Releases"
     type: "github"
     token_env: "GITHUB_TOKEN"

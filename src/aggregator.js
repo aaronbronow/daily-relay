@@ -232,25 +232,35 @@ async function aggregate() {
       }
 
       let tasksPart = "";
-      if (data.tasks && data.tasks.rawData) {
-        const promptChanged = cachedData && cachedData.tasks && cachedData.tasks.system_prompt !== data.tasks.system_prompt;
-        if ((data.tasks._reused || ollamaOffline) && cachedData && cachedData._tasksBrief && !promptChanged) {
-          tasksPart = cachedData._tasksBrief;
-        } else if (!ollamaOffline) {
-          console.log(`[Aggregator] Generating tasks brief...`);
-          const tasksPrompt = `${data.tasks.system_prompt || 'Summarize these tasks.'}\n\n<content>\n${data.tasks.rawData}\n</content>\n\nSummary:`;
-          try {
-            const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ model: ollamaModel, prompt: tasksPrompt, stream: false })
-            });
-            if (response.ok) {
-              const result = await response.json();
-              tasksPart = result.response.trim();
-              data._tasksBrief = tasksPart;
-            }
-          } catch (err) { console.warn(`[Aggregator] Tasks brief failed:`, err.message); }
+      if (data.tasks && data.tasks._tasks) {
+        const tasks = data.tasks._tasks;
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+        const pastDueAndToday = tasks.filter(t => {
+          if (!t.due) return false;
+          return new Date(t.due) <= endOfToday;
+        });
+
+        const futureTasks = tasks.filter(t => {
+          if (!t.due) return true; // Treat no-due-date as future/pending
+          return new Date(t.due) > endOfToday;
+        });
+
+        if (tasks.length === 0) {
+          tasksPart = "You have no tasks due this week.";
+        } else {
+          const parts = [];
+          if (pastDueAndToday.length > 0) {
+            const list = pastDueAndToday.map(t => t.title).join(", ");
+            parts.push(`There are ${pastDueAndToday.length} tasks for today: ${list}.`);
+          }
+          if (futureTasks.length > 0) {
+            const list = futureTasks.map(t => t.title).join(", ");
+            parts.push(`There are ${futureTasks.length} other tasks this week: ${list}.`);
+          }
+          tasksPart = parts.join(" ");
         }
       }
 
