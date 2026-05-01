@@ -53,6 +53,8 @@ sources:
       </instructions>
   - name: "Wikimedia History"
     type: "history"
+    source_url: "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Today"
+    source_name: "wikipedia.org"
     system_prompt: |
       You are a wise and thoughtful briefing assistant. Your goal is to curate 1 historical event from the list of past events which occured on today's date.
       

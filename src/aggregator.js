@@ -134,7 +134,7 @@ async function aggregate() {
         result.empty = true;
       }
 
-      newsResults.push({ ...result, type: source.type, system_prompt: source.system_prompt });
+      newsResults.push({ ...result, ...source });
     } catch (err) {
       console.error(`[Aggregator] Collector failed for ${source.name}:`, err.message);
     }
@@ -215,8 +215,11 @@ async function aggregate() {
               historyPart = result.response.trim();
               
               // Add a small source link like Google AI summaries
-              const historyUrl = "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Today";
-              historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; vertical-align: super; text-decoration: none; background: #eee; padding: 1px 6px; border-radius: 10px; color: #555; margin-left: 4px;">Source: wikipedia.org</a>`;
+              const historyUrl = data.history.source_url;
+              const historyLabel = data.history.source_name || "Source";
+              if (historyUrl) {
+                historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; vertical-align: super; text-decoration: none; background: #eee; padding: 1px 6px; border-radius: 10px; color: #555; margin-left: 4px;">Source: ${historyLabel}</a>`;
+              }
               
               data._historyBrief = historyPart; // Store raw text for potential reuse
             }
