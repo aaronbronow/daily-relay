@@ -216,7 +216,7 @@ async function aggregate() {
               
               // Add a small source link like Google AI summaries
               const historyUrl = "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Today";
-              historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; vertical-align: super; text-decoration: none; background: #eee; padding: 1px 6px; border-radius: 10px; color: #555; margin-left: 4px;">Source</a>`;
+              historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; vertical-align: super; text-decoration: none; background: #eee; padding: 1px 6px; border-radius: 10px; color: #555; margin-left: 4px;">Source: wikipedia.org</a>`;
               
               data._historyBrief = historyPart; // Store raw text for potential reuse
             }
