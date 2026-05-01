@@ -250,10 +250,19 @@ async function aggregate() {
 
         const formatTaskList = (list) => {
           if (list.length === 0) return "";
-          if (list.length === 1) return list[0].title;
-          if (list.length === 2) return `${list[0].title} and ${list[1].title}`;
-          const allButLast = list.slice(0, -1).map(t => t.title).join(", ");
-          return `${allButLast}, and ${list[list.length - 1].title}`;
+          
+          const getTaskDisplay = (t) => {
+            if (!t.due || t.due.endsWith('T00:00:00.000Z')) {
+              return t.title;
+            }
+            const timePart = new Date(t.due).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+            return `${t.title} at ${timePart}`;
+          };
+
+          if (list.length === 1) return getTaskDisplay(list[0]);
+          if (list.length === 2) return `${getTaskDisplay(list[0])} and ${getTaskDisplay(list[1])}`;
+          const allButLast = list.slice(0, -1).map(t => getTaskDisplay(t)).join(", ");
+          return `${allButLast}, and ${getTaskDisplay(list[list.length - 1])}`;
         };
 
         if (tasks.length === 0) {
