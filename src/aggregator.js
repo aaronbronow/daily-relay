@@ -66,8 +66,8 @@ async function aggregate() {
   const skipSources = [];
   for (let i = 0; i < args.length; i++) {
     // Note: --only and --include are npm config collisions. 
-    // Use --site or --source, or ensure you use the -- separator: npm run aggregate -- --only "Source"
-    if ((args[i] === '--only' || args[i] === '--site' || args[i] === '--source') && args[i+1]) {
+    // Use --source, or ensure you use the -- separator: npm run aggregate -- --only "Source"
+    if ((args[i] === '--only' || args[i] === '--source') && args[i+1]) { 
       onlySources.push(args[i+1]); 
       i++; 
     }
@@ -260,11 +260,12 @@ async function aggregate() {
           continue;
         }
 
-        if (ollamaOffline) {
+        if (ollamaOffline || siteData._reused) {
           if (cachedData && cachedData.summaries && cachedData.summaries[siteData.site]) {
+            if (siteData._reused && !ollamaOffline) console.log(`[Aggregator] Reusing cached summary for ${siteData.site}.`);
             data.summaries[siteData.site] = cachedData.summaries[siteData.site];
           } else {
-            data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- Summaries unavailable (AI offline).`);
+            data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- Summaries unavailable${ollamaOffline ? ' (AI offline)' : ''}.`);
           }
           continue;
         }
@@ -276,11 +277,15 @@ async function aggregate() {
           const isEmail = siteData.type === 'imap';
           const isGithub = siteData.type === 'github';
           
-          let typeLabel = 'news item';
-          if (isEmail) typeLabel = 'email';
-          if (isGithub) typeLabel = 'GitHub release';
+          let prompt = "";
+          if (siteData.system_prompt) {
+            prompt = `${siteData.system_prompt}\n\n<content>\n${isEmail ? `From: ${item.from}\nSubject: ${item.title}` : `Title: ${item.title}`}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
+          } else {
+            let typeLabel = 'news item';
+            if (isEmail) typeLabel = 'email';
+            if (isGithub) typeLabel = 'GitHub release';
 
-          const prompt = `You are a professional briefing assistant. Summarize the following ${typeLabel} into ${isGithub ? 'exactly 2-3 concise prose sentences' : 'exactly ONE concise sentence'}.
+            prompt = `You are a professional briefing assistant. Summarize the following ${typeLabel} into ${isGithub ? 'exactly 2-3 concise prose sentences' : 'exactly ONE concise sentence'}.
 
 <instructions>
 1. Output ONLY the raw text of the summary.
@@ -299,6 +304,7 @@ Description: ${item.description || 'N/A'}
 </content>
 
 Summary:`;
+          }
 
           try {
             const response = await fetch(`${ollamaUrl.replace(/\/$/, '')}/api/generate`, {

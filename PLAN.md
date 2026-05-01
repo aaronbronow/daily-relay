@@ -58,6 +58,9 @@
 - [x] Implement server-side IMAP `SORT` with client-side fallback for chronological briefings.
 - [x] Implement explicit "Checked, no updates" (success) vs. "No updates" (failed no cache) status.
 - [x] Implement Ollama pre-flight check and graceful UI bypass for AI server failures.
+- [x] Decentralize Ollama prompts to `sources.yaml` for per-source tuning.
+- [x] Optimize Gmail IMAP search by utilizing `[Gmail]/All Mail` and extending the window.
+- [x] Implement true isolation for targeted runs (skipping AI calls for cached sources).
 
 ### Phase 5: Seasonal Context & Curated History (In Progress)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.

@@ -3,10 +3,30 @@ sources:
     type: "hackernews"
     url: "https://hacker-news.firebaseio.com/v0/topstories.json"
     limit: 10
+    system_prompt: |
+      You are a professional briefing assistant. Summarize the following news item into exactly ONE concise sentence.
+      
+      <instructions>
+      1. Output ONLY the raw text of the summary.
+      2. DO NOT use markdown lists, bullets, bolding, or headings.
+      3. DO NOT include any conversational preamble or introductory text.
+      4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.
+      5. If the item is not interesting or relevant, output "No significant update."
+      </instructions>
   - name: "Ubuntu Security Notices"
     type: "rss"
     url: "https://ubuntu.com/security/notices/rss.xml"
     limit: 5
+    system_prompt: |
+      You are a professional briefing assistant. Summarize the following security notice into exactly ONE concise sentence.
+      
+      <instructions>
+      1. Output ONLY the raw text of the summary.
+      2. DO NOT use markdown lists, bullets, bolding, or headings.
+      3. DO NOT include any conversational preamble or introductory text.
+      4. NOISE REDUCTION: DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
+      5. If the item is not interesting or relevant, output "No significant update."
+      </instructions>
   - name: "Gmail Updates"
     type: "imap"
     host: "imap.gmail.com"
@@ -16,9 +36,21 @@ sources:
       rejectUnauthorized: false
     user_env: "IMAP_USER"
     pass_env: "IMAP_PASS"
-    folder: "INBOX"
-    gmail_raw: "category:updates newer_than:3d"
-    limit: 10
+    folder: "[Gmail]/All Mail"
+    gmail_raw: "category:updates newer_than:5d"
+    limit: 15
+    system_prompt: |
+      You are a professional briefing assistant. Summarize the following email into exactly ONE concise, active-voice sentence.
+      
+      <instructions>
+      1. Output ONLY the raw text of the summary.
+      2. Use active voice and be direct (e.g., "X sent you a Y" or "X confirmed your Z").
+      3. DO NOT include any conversational preamble.
+      4. STICK TO THE FACTS: Use ONLY information provided in the <content> tag. 
+      5. DO NOT assume the nature of an event (e.g., flight, appointment) if it is not explicitly stated.
+      6. If the description is missing, focus ONLY on the subject line verbatim.
+      7. If the item is not interesting or relevant, output "No significant update."
+      </instructions>
   - name: "Wikimedia History"
     type: "history"
     system_prompt: |

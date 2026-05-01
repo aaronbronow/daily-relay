@@ -43,11 +43,15 @@
 - **Google OAuth Loopback:** For desktop apps in a remote-dev environment (like VS Code SSH), using `http://127.0.0.1` and binding the local server to `0.0.0.0` is the most robust way to capture authorization codes through an automatic tunnel.
 - **Task-Level Independence:** Explicitly forbidding possessive pronouns (e.g., "their", "his") in LLM prompts is critical when summarizing multiple tasks that share a date, preventing the model from hallucinating relationships between unrelated items.
 - **Cache vs. Status:** Distinguishing between a "Failed Collection" (fallback to cache) and a "Successful Empty Run" (clear cache and report status) ensures the briefing remains accurate and doesn't stale out.
-- **CLI Flag Collisions:** `npm run` intercepts several flags (like `--only` and `--include`) for its own configuration. Using the `--` separator or alternative aliases like `--site` is necessary to pass these flags to the underlying script.
+- **CLI Flag Collisions:** `npm run` intercepts several flags (like `--only` and `--include`) for its own configuration. Using the `--` separator or alternative aliases like `--source` is necessary to pass these flags to the underlying script.
 - **Structured Summaries:** Prepending summaries with metadata (e.g., "Repo, Version, Relative Date:" or "From [Sender], Relative Date:") provides immediate context for the user and maintains a consistent structure across different data sources.
 - **AI Health Checks:** Implementing a pre-flight ping (with timeout) to the Ollama server prevents multiple `fetch` failures from cluttering logs and slowing down the aggregator when the AI is offline.
 - **UI Error Visibility:** Providing a dedicated `systemWarning` banner in the UI ensures the user is aware of AI/source connectivity issues without needing to check container logs.
 - **Upstream Resilience:** Persistent `ECONNRESET` errors on specific domains (like `ubuntu.com`) often indicate infrastructure-level outages or IP filtering; graceful fallbacks to cache are essential to keep the dashboard functional during major external downtime.
+- **Gmail Search Scope:** Searching `INBOX` alone misses emails that skip the inbox via labels/filters. Searching `[Gmail]/All Mail` is more comprehensive for category-based briefings, especially when using `category:updates`.
+- **IMAP Content Fallback:** Some emails provide a whitespace-only `text` part (e.g., just a newline). Robust snippet extraction must check `trim().length > 0` before deciding to skip the HTML-to-text fallback.
+- **Prompt Neutrality:** Using specific examples (like "acupuncture") in system prompts can cause "anchor bias" where the AI hallucinates the nature of vague events. Use neutral examples (e.g., "X sent Y") to maintain accuracy.
+- **Decentralized Prompts:** Moving LLM prompts to `sources.yaml` allows for surgical tuning of summaries per source (e.g., active voice for emails vs. verbatim for news) without modifying core orchestration logic.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.

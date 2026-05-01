@@ -83,11 +83,18 @@ async function collect(config) {
                   
                   // Extract a clean text snippet
                   let snippet = '';
-                  if (parsed.text) {
-                    snippet = parsed.text.substring(0, 500).replace(/\s+/g, ' ').trim();
+                  const hasText = parsed.text && parsed.text.trim().length > 0;
+                  
+                  if (hasText) {
+                    snippet = parsed.text;
                   } else if (parsed.html) {
-                    snippet = parsed.html.replace(/<[^>]*>/g, ' ').substring(0, 500).replace(/\s+/g, ' ').trim();
+                    // More aggressive HTML cleaning if text is missing
+                    snippet = parsed.html
+                      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gmi, ' ')
+                      .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gmi, ' ')
+                      .replace(/<[^>]*>/g, ' ');
                   }
+                  snippet = snippet.replace(/\s+/g, ' ').trim().substring(0, 1000);
 
                   items.push({
                     title: subject,
