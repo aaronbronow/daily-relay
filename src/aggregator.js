@@ -235,16 +235,24 @@ async function aggregate() {
       if (data.tasks && data.tasks._tasks) {
         const tasks = data.tasks._tasks;
         const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayStr = now.toLocaleDateString('en-CA');
         const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
         const pastDueAndToday = tasks.filter(t => {
           if (!t.due) return false;
+          const isAllDay = t.due.endsWith('T00:00:00.000Z');
+          if (isAllDay) {
+            return t.due.split('T')[0] <= todayStr;
+          }
           return new Date(t.due) <= endOfToday;
         });
 
         const futureTasks = tasks.filter(t => {
           if (!t.due) return true; // Treat no-due-date as future/pending
+          const isAllDay = t.due.endsWith('T00:00:00.000Z');
+          if (isAllDay) {
+            return t.due.split('T')[0] > todayStr;
+          }
           return new Date(t.due) > endOfToday;
         });
 
@@ -270,10 +278,16 @@ async function aggregate() {
         } else {
           const parts = [];
           if (pastDueAndToday.length > 0) {
-            parts.push(`There are ${pastDueAndToday.length} tasks for today: ${formatTaskList(pastDueAndToday)}.`);
+            const count = pastDueAndToday.length;
+            const verb = count === 1 ? "is" : "are";
+            const noun = count === 1 ? "task" : "tasks";
+            parts.push(`There ${verb} ${count} ${noun} for today: ${formatTaskList(pastDueAndToday)}.`);
           }
           if (futureTasks.length > 0) {
-            parts.push(`There are ${futureTasks.length} other tasks this week: ${formatTaskList(futureTasks)}.`);
+            const count = futureTasks.length;
+            const verb = count === 1 ? "is" : "are";
+            const noun = count === 1 ? "task" : "tasks";
+            parts.push(`There ${verb} ${count} other ${noun} this week: ${formatTaskList(futureTasks)}.`);
           }
           tasksPart = parts.join(" ");
         }
