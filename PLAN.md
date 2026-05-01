@@ -20,11 +20,13 @@
 - `src/collectors/seasonCollector.js`: Local YAML parser for the "Holidays of Health" cycle.
 - `src/collectors/motdCollector.js`: Directory-watcher for incoming Ubuntu system health reports.
 - `src/collectors/historyCollector.js`: Wikimedia API client with interest-based LLM filtering (Complete).
-- `src/collectors/tasksCollector.js`: Google Tasks API client for urgent tasks (Complete).
+- `src/collectors/tasksCollector.js`: Google Tasks API client with multi-list support and timezone-aware grouping (Complete).
+- `src/collectors/githubCollector.js`: GitHub Releases aggregator for high-signal repo updates (Complete).
 
 ### Stage 2: The Collator (Processing)
 - **Aggregator:** Orchestrates sequential collector execution and manages resilient fallbacks (Complete).
 - **Narrator:** Per-item individual prose summarization via local Ollama. Uses XML-tag prompting and anti-hallucination rules (Complete).
+- **Task Briefing:** Deterministic code-level natural language formatting for tasks (Today vs Week) to ensure 100% accuracy (Complete).
 - **Generator:** Uses `EJS` to inject data into `src/templates/briefing.ejs` (Complete).
 
 ### Stage 3: The Publisher (Delivery)
@@ -63,20 +65,20 @@
 - [x] Implement true isolation for targeted runs (skipping AI calls for cached sources).
 - [x] Implement `--force` flag to bypass version-matching logic and force re-summarization.
 
-### Phase 5: Seasonal Context & Curated History (In Progress)
+### Phase 5: Seasonal Context & Curated History (Complete)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
 - [ ] **Season Collector**: Build `seasonCollector.js` to calculate current week/theme without external APIs.
-- [x] **Curated History**: Exhaustive Wikimedia fetcher with code-level interest filtering and dynamic source links (Complete).
-- [x] **Google Tasks**: Build `tasksCollector.js` to fetch and summarize urgent tasks in the prose intro via OAuth2.
+- [x] **Curated History**: Exhaustive Wikimedia fetcher with code-level interest filtering and dynamic source links.
+- [x] **Google Tasks**: Multi-list fetcher with code-based natural language briefing and task completion tracking.
 - [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
-- [x] **GitHub Releases**: Build `githubCollector.js` to aggregate and summarize high-signal software updates (Complete).
+- [x] **GitHub Releases**: Aggregator for software updates with item-level AI summarization.
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
 - [ ] **Log Tailer**: Implement `logCollector.js` to extract status from Unraid job output files.
 - [ ] **MOTD Ingestion**: Add Express endpoint `/api/motd/:hostname` to receive remote Ubuntu health reports.
 - [ ] **MOTD Collector**: Build `motdCollector.js` to summarize multi-node update statuses concisely.
-- [x] **Auth Utilities**: Create `src/utils/getGoogleToken.js` for easier OAuth re-authentication (Complete).
-- [ ] **Agent Tags**: Refine HTML with `aria-hidden` on technical timestamps to prevent the TTS agent from reading raw ISO strings.
+- [x] **Auth Utilities**: Created `src/utils/getGoogleToken.js` for OAuth2 flow management.
+- [x] **UI Error Reporting**: Implement visible warning banners in `briefing.ejs` for connection failures and stale cache fallback.
 
 ### Phase 7: Mobile & Agent Refinement
 - [ ] **Mobile CSS**: Finalize "Reader Mode" CSS specifically for mobile Chrome and Safari.
