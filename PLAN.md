@@ -57,6 +57,7 @@
 - [x] Implement relative date bucketing for emails (today, yesterday, this week, earlier).
 - [x] Implement server-side IMAP `SORT` with client-side fallback for chronological briefings.
 - [x] Implement explicit "Checked, no updates" (success) vs. "No updates" (failed no cache) status.
+- [x] Implement Ollama pre-flight check and graceful UI bypass for AI server failures.
 
 ### Phase 5: Seasonal Context & Curated History (In Progress)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.

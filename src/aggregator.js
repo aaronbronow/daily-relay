@@ -148,7 +148,8 @@ async function aggregate() {
     todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'github' && r.type !== 'history' && r.type !== 'tasks'),
     history: historyResult,
     tasks: tasksResult,
-    summaries: {} // Map of siteName -> htmlSummary
+    summaries: {}, // Map of siteName -> htmlSummary
+    systemWarning: null
   };
 
   // 4. Conditional Ollama Integration (Per-Site)
@@ -156,21 +157,42 @@ async function aggregate() {
   const ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
   if (ollamaUrl) {
+    // 4.0 Pre-flight check for Ollama
+    let ollamaOffline = false;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const ping = await fetch(`${ollamaUrl.replace(/\/$/, '')}/`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!ping.ok) ollamaOffline = true;
+    } catch (err) {
+      ollamaOffline = true;
+    }
+
+    if (ollamaOffline) {
+      console.warn(`[Aggregator] Ollama server is unreachable at ${ollamaUrl}. Skipping AI summaries.`);
+      data.systemWarning = "AI server is unreachable. Summaries may be missing or outdated.";
+    }
+
     // Global Version Check: If this run version matches the cached version, reuse all summaries
     if (cachedData && cachedData.version === runVersion && cachedData.summaries) {
       console.log(`[Aggregator] Version match (${runVersion}). Reusing cached summaries.`);
       data.summaries = cachedData.summaries;
       data.brief = cachedData.brief;
     } else {
-      console.log(`[Aggregator] Requesting summaries from Ollama...`);
+      if (!ollamaOffline) {
+        console.log(`[Aggregator] Requesting summaries from Ollama...`);
+      } else {
+        console.log(`[Aggregator] Reusing cached summaries/brief due to AI offline.`);
+      }
 
       // 4a. Process Prose Intro (History & Tasks)
       let historyPart = "";
       if (data.history && data.history.rawData) {
         const promptChanged = cachedData && cachedData.history && cachedData.history.system_prompt !== data.history.system_prompt;
-        if (data.history._reused && cachedData && cachedData._historyBrief && !promptChanged) {
+        if ((data.history._reused || ollamaOffline) && cachedData && cachedData._historyBrief && !promptChanged) {
           historyPart = cachedData._historyBrief;
-        } else {
+        } else if (!ollamaOffline) {
           console.log(`[Aggregator] Generating history brief...`);
           const historyPrompt = `${data.history.system_prompt || 'Summarize these historical events into a conversational paragraph.'}\n\n<content>\n${data.history.rawData}\n</content>\n\nSummary:`;
           try {
@@ -191,9 +213,9 @@ async function aggregate() {
       let tasksPart = "";
       if (data.tasks && data.tasks.rawData) {
         const promptChanged = cachedData && cachedData.tasks && cachedData.tasks.system_prompt !== data.tasks.system_prompt;
-        if (data.tasks._reused && cachedData && cachedData._tasksBrief && !promptChanged) {
+        if ((data.tasks._reused || ollamaOffline) && cachedData && cachedData._tasksBrief && !promptChanged) {
           tasksPart = cachedData._tasksBrief;
-        } else {
+        } else if (!ollamaOffline) {
           console.log(`[Aggregator] Generating tasks brief...`);
           const tasksPrompt = `${data.tasks.system_prompt || 'Summarize these tasks.'}\n\n<content>\n${data.tasks.rawData}\n</content>\n\nSummary:`;
           try {
@@ -219,7 +241,7 @@ async function aggregate() {
       if (combinedProse.length > 0) {
         data.brief = await marked.parse(combinedProse.join("\n\n"));
       } else {
-        data.brief = "<p>No updates available for your morning overview.</p>";
+        data.brief = ollamaOffline ? "<p>Summaries unavailable (AI offline).</p>" : "<p>No updates available for your morning overview.</p>";
       }
       
       const allResults = [...data.emailUpdates, ...data.githubUpdates, ...data.todaysNews];
@@ -235,6 +257,15 @@ async function aggregate() {
         if (siteData.failedNoCache) {
           console.log(`[Aggregator] Site ${siteData.site} failed and no cache found. Setting 'no updates' summary.`);
           data.summaries[siteData.site] = isImap ? await marked.parse(`- No updates.`) : await marked.parse(`### News from ${siteData.site}\n- Connection failed, no updates available.`);
+          continue;
+        }
+
+        if (ollamaOffline) {
+          if (cachedData && cachedData.summaries && cachedData.summaries[siteData.site]) {
+            data.summaries[siteData.site] = cachedData.summaries[siteData.site];
+          } else {
+            data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- Summaries unavailable (AI offline).`);
+          }
           continue;
         }
 

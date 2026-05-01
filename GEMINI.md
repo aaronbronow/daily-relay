@@ -45,6 +45,9 @@
 - **Cache vs. Status:** Distinguishing between a "Failed Collection" (fallback to cache) and a "Successful Empty Run" (clear cache and report status) ensures the briefing remains accurate and doesn't stale out.
 - **CLI Flag Collisions:** `npm run` intercepts several flags (like `--only` and `--include`) for its own configuration. Using the `--` separator or alternative aliases like `--site` is necessary to pass these flags to the underlying script.
 - **Structured Summaries:** Prepending summaries with metadata (e.g., "Repo, Version, Relative Date:" or "From [Sender], Relative Date:") provides immediate context for the user and maintains a consistent structure across different data sources.
+- **AI Health Checks:** Implementing a pre-flight ping (with timeout) to the Ollama server prevents multiple `fetch` failures from cluttering logs and slowing down the aggregator when the AI is offline.
+- **UI Error Visibility:** Providing a dedicated `systemWarning` banner in the UI ensures the user is aware of AI/source connectivity issues without needing to check container logs.
+- **Upstream Resilience:** Persistent `ECONNRESET` errors on specific domains (like `ubuntu.com`) often indicate infrastructure-level outages or IP filtering; graceful fallbacks to cache are essential to keep the dashboard functional during major external downtime.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.

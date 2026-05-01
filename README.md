@@ -6,6 +6,7 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 
 - **Multi-Source Support:** Hacker News API, RSS/Atom feeds, and Gmail (via IMAP).
 - **Per-Item AI Summarization:** Individual, focused prose summaries for every single news item and email using a local Ollama instance.
+- **AI Health Check:** Automatically pings Ollama and bypasses AI calls if unreachable, with graceful UI fallbacks to cached summaries.
 - **Context-Aware Briefings:** Utilizes RSS descriptions and email body snippets to provide accurate, high-quality summaries.
 - **Resilient State Management:** Automatically carries forward last known good data and summaries if a collector fails or times out.
 - **Accessibility Optimized:** Optimized for Chrome's "Reading Mode" and TTS agents (links are hidden from automated readers).
@@ -24,9 +25,9 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 
 ## Technical Architecture
 
--   **Aggregator:** Sequential CLI tool (triggered hourly via cron) that orchestrates individual AI calls per item for maximum focus.
+-   **Aggregator:** Sequential CLI tool (triggered hourly via cron) that orchestrates individual AI calls per item for maximum focus. Includes pre-flight checks for AI connectivity.
 -   **Publisher:** Lightweight Node.js server for static delivery and live-reloading.
--   **State:** Persistent cache in `data/cache.json` with fallback logic to prevent UI blanking on network errors.
+-   **State:** Persistent cache in `data/cache.json` with fallback logic and system-level warning banners to prevent UI blanking on network errors.
 -   **Networking:** Host networking mode for seamless Tailscale and Ollama integration.
 
 ## Development

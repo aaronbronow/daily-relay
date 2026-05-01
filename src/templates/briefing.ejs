@@ -47,6 +47,23 @@
         .summary ul { margin: 0; padding-left: 1.2rem; }
         .summary li { margin-bottom: 0.5rem; }
         
+        .warning-banner {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .warning-banner::before {
+            content: "⚠️";
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
         aside {
             margin-top: 4rem;
             padding-top: 2rem;
@@ -76,6 +93,13 @@
     </header>
 
     <main>
+        <!-- System Warnings -->
+        <% if (briefing.systemWarning) { %>
+            <div class="warning-banner" role="alert">
+                <%= briefing.systemWarning %>
+            </div>
+        <% } %>
+
         <!-- Intro / Status Brief -->
         <section id="status">
             <article>
