@@ -64,6 +64,8 @@ async function aggregate() {
   const args = process.argv.slice(2);
   const onlySources = [];
   const skipSources = [];
+  let forceSummarize = false;
+
   for (let i = 0; i < args.length; i++) {
     // Note: --only and --include are npm config collisions. 
     // Use --source, or ensure you use the -- separator: npm run aggregate -- --only "Source"
@@ -74,6 +76,9 @@ async function aggregate() {
     else if (args[i] === '--skip' && args[i+1]) { 
       skipSources.push(args[i+1]); 
       i++; 
+    }
+    else if (args[i] === '--force') {
+      forceSummarize = true;
     }
   }
 
@@ -174,8 +179,12 @@ async function aggregate() {
       data.systemWarning = "AI server is unreachable. Summaries may be missing or outdated.";
     }
 
+    if (forceSummarize) {
+      console.log(`[Aggregator] Force flag detected. Bypassing version check.`);
+    }
+
     // Global Version Check: If this run version matches the cached version, reuse all summaries
-    if (cachedData && cachedData.version === runVersion && cachedData.summaries) {
+    if (!forceSummarize && cachedData && cachedData.version === runVersion && cachedData.summaries) {
       console.log(`[Aggregator] Version match (${runVersion}). Reusing cached summaries.`);
       data.summaries = cachedData.summaries;
       data.brief = cachedData.brief;

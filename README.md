@@ -41,6 +41,9 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
     # Run only a specific collector (use --source to avoid npm flag collisions)
     # The -- separator is required to pass arguments safely through npm
     docker exec daily-relay-daily-relay-1 npm run aggregate -- --source "GitHub Releases"
+
+    # Force a re-summarization even if run within the same minute
+    docker exec daily-relay-daily-relay-1 npm run aggregate -- --force
     ```
 - **Re-authorize Google Tasks:**
     ```bash
