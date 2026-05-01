@@ -52,6 +52,10 @@
 - **IMAP Content Fallback:** Some emails provide a whitespace-only `text` part (e.g., just a newline). Robust snippet extraction must check `trim().length > 0` before deciding to skip the HTML-to-text fallback.
 - **Prompt Neutrality:** Using specific examples (like "acupuncture") in system prompts can cause "anchor bias" where the AI hallucinates the nature of vague events. Use neutral examples (e.g., "X sent Y") to maintain accuracy.
 - **Decentralized Prompts:** Moving LLM prompts to `sources.yaml` allows for surgical tuning of summaries per source (e.g., active voice for emails vs. verbatim for news) without modifying core orchestration logic.
+- **Code-Level Filtering:** For high-volume data (like historical events), using code-based regex filtering BEFORE the LLM significantly reduces context window usage and prevents local models from hallucinating due to information overload. This is more resilient than relying on human-curated small lists which may miss relevant niche items.
+- **Dynamic Source Metadata:** Generating source URLs and labels in the collector script allows for accurate attribution that matches the dynamic nature of the data (e.g., linking to specific Wikipedia date articles).
+- **Env Variable Precedence:** When using `dotenvx` or similar tools, variables already exported in the shell environment take precedence over `.env` files. If a token update in `.env` isn't taking effect, `unset` the variable in the active session.
+- **Bypassing State Cache:** Implementing a `--force` flag to bypass version-matching logic is essential for rapid debugging when data has changed but the timestamp hasn't advanced to a new minute.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.

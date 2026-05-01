@@ -29,14 +29,38 @@ async function collect(config) {
       return { site: SITE_NAME, rawData: "No historical events found for today." };
     }
 
+    // 1. Keyword Filtering for Interests
+    const interests = config.interests || [
+      'aerospace', 'space', 'orbit', 'nasa', 'rocket', 'satellite', 'shuttle', 'apollo', 'voyager', 'hubble', 'launch', 'aviation', 'aircraft', 'pilot',
+      'engineering', 'bridge', 'tunnel', 'dam', 'engine', 'patent', 'invention', 'scientific',
+      'software', 'computer', 'programming', 'algorithm', 'linux', 'unix', 'microsoft', 'apple', 'google', 'amazon', 'semiconductor', 'microprocessor', 'chip', 'transistor', 'mainframe',
+      'photography', 'camera', 'daguerreotype', 'kodak', 'leica', 'film', 'photograph', 'lens',
+      'seattle', 'portland', 'oregon', 'washington', 'cascadia', 'puget', 'vancouver', 'boeing',
+      'physics', 'electron', 'supernova', 'astronomy', 'telescope', 'web', 'internet', 'technology'
+    ];
+    const interestRegex = new RegExp(`\\b(${interests.join('|')})\\b`, 'i');
+
+    let filteredEvents = data.events.filter(event => interestRegex.test(event.text));
+
+    // Fallback: If no interest matches, take the first 3 globally significant events
+    if (filteredEvents.length === 0) {
+      filteredEvents = data.events.slice(0, 3);
+    }
+
     // Return a consolidated raw string of events for the LLM to process
-    const rawEvents = data.events.map(event => {
+    const rawEvents = filteredEvents.map(event => {
       return `[Year ${event.year}] ${event.text}`;
     }).join("\n");
 
+    // 2. Dynamic Source URL Generation
+    const monthName = now.toLocaleString('en-US', { month: 'long' });
+    const sourceUrl = `https://en.wikipedia.org/wiki/${monthName}_${now.getDate()}`;
+
     return {
       site: SITE_NAME,
-      rawData: rawEvents
+      rawData: rawEvents,
+      source_url: sourceUrl,
+      source_name: "wikipedia.org"
     };
   } catch (error) {
     console.error(`[historyCollector] Error:`, error.message);

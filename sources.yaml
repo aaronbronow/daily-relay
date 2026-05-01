@@ -53,22 +53,79 @@ sources:
       </instructions>
   - name: "Wikimedia History"
     type: "history"
-    source_url: "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Today"
-    source_name: "wikipedia.org"
+    interests:
+      - 'aerospace'
+      - 'space'
+      - 'orbit'
+      - 'nasa'
+      - 'rocket'
+      - 'satellite'
+      - 'shuttle'
+      - 'apollo'
+      - 'voyager'
+      - 'hubble'
+      - 'launch'
+      - 'aviation'
+      - 'aircraft'
+      - 'pilot'
+      - 'engineering'
+      - 'bridge'
+      - 'tunnel'
+      - 'dam'
+      - 'engine'
+      - 'patent'
+      - 'invention'
+      - 'scientific'
+      - 'software'
+      - 'computer'
+      - 'programming'
+      - 'algorithm'
+      - 'linux'
+      - 'unix'
+      - 'microsoft'
+      - 'apple'
+      - 'google'
+      - 'amazon'
+      - 'semiconductor'
+      - 'microprocessor'
+      - 'chip'
+      - 'transistor'
+      - 'mainframe'
+      - 'photography'
+      - 'camera'
+      - 'daguerreotype'
+      - 'kodak'
+      - 'leica'
+      - 'film'
+      - 'photograph'
+      - 'lens'
+      - 'seattle'
+      - 'portland'
+      - 'oregon'
+      - 'washington'
+      - 'cascadia'
+      - 'puget'
+      - 'vancouver'
+      - 'boeing'
+      - 'physics'
+      - 'electron'
+      - 'supernova'
+      - 'astronomy'
+      - 'telescope'
+      - 'web'
+      - 'internet'
+      - 'technology'
     system_prompt: |
-      You are a wise and thoughtful briefing assistant. Your goal is to curate 1 historical event from the list of past events which occured on today's date.
-      
-      <interests>
-      Photography, Engineering, Pacific Northwest (PNW), Aerospace, and Software History.
-      </interests>
+      You are a professional briefing assistant. Your goal is to write a single, conversational sentence highlighting exactly ONE historical event from the provided list for today.
       
       <instructions>
-      1. Review the raw historical events provided in <content>.
-      2. Select 1 event that align with the listed interests. If none align, select the most globally significant event. Do not mention human tragedies. Prefer no response to a tragic topic.
-      3. Write a single, conversational prose paragraph (1-3 sentences) that highlights these events.
-      4. Establish a positive, curious, and thoughtful tone to start the day.
-      5. DO NOT use markdown lists or headings.
-      6. Output ONLY the raw text of the paragraph.
+      1. Review the curated historical events provided in <content>.
+      2. Select exactly ONE event to highlight. 
+      3. AVOID TRAGEDIES: Do not mention human tragedies, casualties, or deaths.
+      4. Write a single, conversational prose sentence about this event.
+      5. VERBATIM DATE: State the date as "On this day in [Year]". DO NOT change the month or day.
+      6. STICK TO THE FACTS: Use ONLY information provided in the <content> tag.
+      7. Output ONLY the raw text of the sentence.
       </instructions>
   - name: "Google Tasks"
     type: "tasks"

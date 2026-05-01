@@ -134,7 +134,7 @@ async function aggregate() {
         result.empty = true;
       }
 
-      newsResults.push({ ...result, ...source });
+      newsResults.push({ ...source, ...result });
     } catch (err) {
       console.error(`[Aggregator] Collector failed for ${source.name}:`, err.message);
     }

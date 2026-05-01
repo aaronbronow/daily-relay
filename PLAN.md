@@ -61,11 +61,12 @@
 - [x] Decentralize Ollama prompts to `sources.yaml` for per-source tuning.
 - [x] Optimize Gmail IMAP search by utilizing `[Gmail]/All Mail` and extending the window.
 - [x] Implement true isolation for targeted runs (skipping AI calls for cached sources).
+- [x] Implement `--force` flag to bypass version-matching logic and force re-summarization.
 
 ### Phase 5: Seasonal Context & Curated History (In Progress)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
 - [ ] **Season Collector**: Build `seasonCollector.js` to calculate current week/theme without external APIs.
-- [x] **Curated History**: Build `historyCollector.js` to fetch Wikimedia events and use the "Narrator" with source-level `system_prompt` to generate a prose intro.
+- [x] **Curated History**: Exhaustive Wikimedia fetcher with code-level interest filtering and dynamic source links (Complete).
 - [x] **Google Tasks**: Build `tasksCollector.js` to fetch and summarize urgent tasks in the prose intro via OAuth2.
 - [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
 - [x] **GitHub Releases**: Build `githubCollector.js` to aggregate and summarize high-signal software updates (Complete).
