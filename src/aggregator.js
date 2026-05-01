@@ -85,6 +85,7 @@ async function aggregate() {
   // 3. Run Collectors (Sequentially to avoid socket/IMAP issues)
   console.log("[Aggregator] Running collectors...");
   const newsResults = [];
+  const staleSources = [];
   
   for (const source of sourcesConfig.sources) {
     let result;
@@ -119,6 +120,7 @@ async function aggregate() {
             console.log(`[Aggregator] Loaded skipped source ${source.name} from cache.`);
           } else {
             console.log(`[Aggregator] Collector for ${source.name} failed. Falling back to cached data.`);
+            staleSources.push(source.name);
           }
           if (cachedSite.items) result.items = cachedSite.items;
           if (cachedSite.rawData) result.rawData = cachedSite.rawData;
@@ -177,6 +179,8 @@ async function aggregate() {
     if (ollamaOffline) {
       console.warn(`[Aggregator] Ollama server is unreachable at ${ollamaUrl}. Skipping AI summaries.`);
       data.systemWarning = "AI server is unreachable. Summaries may be missing or outdated.";
+    } else if (staleSources.length > 0) {
+      data.systemWarning = `Connection failed for: ${staleSources.join(', ')}. Showing cached data.`;
     }
 
     if (forceSummarize) {

@@ -24,17 +24,34 @@ async function collect(config) {
   const tasksService = google.tasks({ version: 'v1', auth: oauth2Client });
 
   try {
-    const res = await tasksService.tasks.list({
-      tasklist: '@default',
-      showCompleted: false,
-      showHidden: false
-    });
+    // 1. Fetch all task lists
+    const listRes = await tasksService.tasklists.list();
+    const taskLists = listRes.data.items || [];
 
-    const tasks = res.data.items;
-    if (!tasks || tasks.length === 0) {
+    if (taskLists.length === 0) {
+      return { site: SITE_NAME, rawData: "No task lists found." };
+    }
+
+    // 2. Fetch tasks from all lists
+    let allTasks = [];
+    for (const list of taskLists) {
+      const res = await tasksService.tasks.list({
+        tasklist: list.id,
+        showCompleted: false,
+        showHidden: false
+      });
+      if (res.data.items) {
+        // Add the list title to each task for better context if needed
+        const tasksWithListInfo = res.data.items.map(t => ({ ...t, listTitle: list.title }));
+        allTasks = allTasks.concat(tasksWithListInfo);
+      }
+    }
+
+    if (allTasks.length === 0) {
       return { site: SITE_NAME, rawData: "No tasks found." };
     }
 
+    const tasks = allTasks;
     const now = new Date();
     const oneWeekFromNow = new Date();
     oneWeekFromNow.setDate(now.getDate() + 7);
@@ -63,7 +80,7 @@ async function collect(config) {
       } else {
         status = "No Due Date";
       }
-      return `[Status: ${status}] ${task.title}${task.due ? ` (Due: ${task.due.split('T')[0]})` : ''}`;
+      return `[List: ${task.listTitle}] [Status: ${status}] ${task.title}${task.due ? ` (Due: ${task.due.split('T')[0]})` : ''}`;
     }).join("\n");
 
     return {
