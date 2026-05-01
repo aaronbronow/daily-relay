@@ -248,17 +248,23 @@ async function aggregate() {
           return new Date(t.due) > endOfToday;
         });
 
+        const formatTaskList = (list) => {
+          if (list.length === 0) return "";
+          if (list.length === 1) return list[0].title;
+          if (list.length === 2) return `${list[0].title} and ${list[1].title}`;
+          const allButLast = list.slice(0, -1).map(t => t.title).join(", ");
+          return `${allButLast}, and ${list[list.length - 1].title}`;
+        };
+
         if (tasks.length === 0) {
           tasksPart = "You have no tasks due this week.";
         } else {
           const parts = [];
           if (pastDueAndToday.length > 0) {
-            const list = pastDueAndToday.map(t => t.title).join(", ");
-            parts.push(`There are ${pastDueAndToday.length} tasks for today: ${list}.`);
+            parts.push(`There are ${pastDueAndToday.length} tasks for today: ${formatTaskList(pastDueAndToday)}.`);
           }
           if (futureTasks.length > 0) {
-            const list = futureTasks.map(t => t.title).join(", ");
-            parts.push(`There are ${futureTasks.length} other tasks this week: ${list}.`);
+            parts.push(`There are ${futureTasks.length} other tasks this week: ${formatTaskList(futureTasks)}.`);
           }
           tasksPart = parts.join(" ");
         }
