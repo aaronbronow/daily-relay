@@ -346,8 +346,50 @@ async function aggregate() {
           const isGithub = siteData.type === 'github';
           
           let prompt = "";
-          if (siteData.system_prompt) {
-            prompt = `${siteData.system_prompt}\n\n<content>\n${isEmail ? `From: ${item.from}\nSubject: ${item.title}` : `Title: ${item.title}`}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
+          let mode = 'one-liner'; // Default
+          
+          if (isEmail) {
+            // Tiered Email Summarization Logic
+            // 1. Check for sender overrides in config
+            if (siteData.sender_overrides) {
+              const override = siteData.sender_overrides.find(o => o.sender === item.fromAddress);
+              if (override) {
+                mode = override.narrator_mode;
+                console.log(`[Aggregator] Applying override for ${item.fromAddress}: ${mode}`);
+              } else {
+                // 2. Inference algorithm
+                const m = item.metrics || {};
+                if (m.headings > 3 || m.links > 25 || m.length > 5000) {
+                  mode = 'full-narrative';
+                  console.log(`[Aggregator] Inferring full-narrative for ${item.fromAddress} (L:${m.length}, H:${m.headings}, Ln:${m.links})`);
+                }
+              }
+            }
+
+            if (mode === 'full-narrative') {
+              prompt = `You are a professional news anchor. Narrate every headline and key topic from this email. Use transitions like "Next in the queue" or "Also of note" to keep the flow smooth and engaging for a listener.
+
+<instructions>
+1. Output ONLY the raw text of the narration.
+2. DO NOT use markdown lists, bullets, bolding, or headings.
+3. DO NOT include any conversational preamble or introductory text.
+4. STICK TO THE FACTS: Use ONLY information provided in the <content> tag.
+5. NOISE REDUCTION: Ignore advertisements, legal footers, and social media links.
+</instructions>
+
+<content>
+From: ${item.from}
+Subject: ${item.title}
+Content: ${item.description || 'N/A'}
+</content>
+
+Narration:`;
+            } else {
+              // Default one-liner
+              prompt = `${siteData.system_prompt || 'Summarize the following email into exactly ONE concise, active-voice sentence.'}\n\n<content>\nFrom: ${item.from}\nSubject: ${item.title}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
+            }
+          } else if (siteData.system_prompt) {
+            prompt = `${siteData.system_prompt}\n\n<content>\n${isGithub ? `Title: ${item.title}` : `Title: ${item.title}`}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
           } else {
             let typeLabel = 'news item';
             if (isEmail) typeLabel = 'email';
@@ -395,15 +437,16 @@ Summary:`;
                 return null;
               }
 
+              let text = summary;
               if (isEmail) {
                 const relativeDate = getBriefingRelativeDate(item.timestamp);
-                return `From ${item.from}, ${relativeDate}: ${summary}`;
-              }
-              if (isGithub) {
+                text = `From ${item.from}, ${relativeDate}: ${summary}`;
+              } else if (isGithub) {
                 const relativeDate = getBriefingRelativeDate(item.timestamp);
-                return `${item.site}, ${item.version}, ${relativeDate}: ${summary}`;
+                text = `${item.site}, ${item.version}, ${relativeDate}: ${summary}`;
               }
-              return summary;
+
+              return { text, mode, from: item.from, title: item.title, timestamp: item.timestamp };
             }
           } catch (err) {
             console.warn(`[Aggregator] Item summary failed for ${siteData.site}:`, err.message);
@@ -416,9 +459,14 @@ Summary:`;
 
         if (validSummaries.length > 0) {
           const isGithub = siteData.type === 'github';
-          const siteHeading = (isImap || isGithub) ? '' : `### News from ${siteData.site}\n`;
-          const markdownList = siteHeading + validSummaries.map(s => `- ${s}`).join("\n");
-          data.summaries[siteData.site] = await marked.parse(markdownList);
+          const isImap = siteData.type === 'imap';
+
+          // Store structured data for the template
+          data.summaries[siteData.site] = {
+            type: siteData.type,
+            items: validSummaries
+          };
+
           console.log(`[Aggregator] Summary generated for ${siteData.site} (${validSummaries.length} items).`);
         } else {
           // Fallback to old summary if we have it
@@ -426,7 +474,12 @@ Summary:`;
             console.log(`[Aggregator] No new summaries for ${siteData.site}. Reusing old summary.`);
             data.summaries[siteData.site] = cachedData.summaries[siteData.site];
           } else {
-            data.summaries[siteData.site] = isImap ? '' : await marked.parse(`### News from ${siteData.site}\n- No significant updates.`);
+            const isImap = siteData.type === 'imap';
+            const emptyText = isImap ? 'Email checked, no updates.' : `No significant updates.`;
+            data.summaries[siteData.site] = {
+              type: siteData.type,
+              items: [{ text: emptyText, mode: 'one-liner' }]
+            };
           }
         }
       }

@@ -64,6 +64,7 @@
 - [x] Optimize Gmail IMAP search by utilizing `[Gmail]/All Mail` and extending the window.
 - [x] Implement true isolation for targeted runs (skipping AI calls for cached sources).
 - [x] Implement `--force` flag to bypass version-matching logic and force re-summarization.
+- [x] **Tiered Email Summarization**: Implement structural inference and sender overrides for one-liner vs. full-narrative modes.
 
 ### Phase 5: Seasonal Context & Curated History (Complete)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.

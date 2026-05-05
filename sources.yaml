@@ -39,6 +39,23 @@ sources:
     folder: "[Gmail]/All Mail"
     gmail_raw: "category:updates newer_than:5d"
     limit: 15
+    sender_overrides:
+      - sender: "donotreply@mail.schwab.com"
+        narrator_mode: "one-liner"
+      - sender: "noreply@mail.selfh.st"
+        narrator_mode: "full-narrative"
+      - sender: "noreply@notify.newrezservicing.com"
+        narrator_mode: "one-liner"
+      - sender: "Business5736524@mindbodyonline.com"
+        narrator_mode: "one-liner"
+      - sender: "jobs-noreply@linkedin.com"
+        narrator_mode: "full-narrative"
+      - sender: "osat@wildapricot.org"
+        narrator_mode: "one-liner"
+      - sender: "no-reply@amazon.com"
+        narrator_mode: "one-liner"
+      - sender: "tjones@poynter.org"
+        narrator_mode: "full-narrative"
     system_prompt: |
       You are a professional briefing assistant. Summarize the following email into exactly ONE concise, active-voice sentence.
       

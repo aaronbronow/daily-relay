@@ -37,15 +37,35 @@
         li { margin-bottom: 0.5rem; }
         a { color: #007bff; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .summary {
-            font-style: italic;
-            background: #e9ecef;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1.5rem;
+
+        .summary-container {
+            margin-bottom: 2rem;
         }
-        .summary ul { margin: 0; padding-left: 1.2rem; }
-        .summary li { margin-bottom: 0.5rem; }
+        .one-liner-list {
+            background: #f1f3f5;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .one-liner-list ul { margin: 0; padding-left: 1.2rem; }
+        
+        .full-narrative-card {
+            background: #ffffff;
+            border-left: 4px solid #6c757d;
+            padding: 1.2rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .full-narrative-card h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
         
         .warning-banner {
             background-color: #fff3cd;
@@ -113,9 +133,30 @@
                 <h2 id="email-heading">Email Updates</h2>
                 
                 <% briefing.emailUpdates.forEach(siteData => { %>
-                    <% if (briefing.summaries[siteData.site]) { %>
-                        <div class="summary">
-                            <%- briefing.summaries[siteData.site] %>
+                    <% const summaryData = briefing.summaries[siteData.site]; %>
+                    <% if (summaryData && summaryData.items) { %>
+                        <div class="summary-container">
+                            <% const oneLiners = summaryData.items.filter(item => item.mode === 'one-liner'); %>
+                            <% const fullNarratives = summaryData.items.filter(item => item.mode === 'full-narrative'); %>
+
+                            <% if (oneLiners.length > 0) { %>
+                                <div class="one-liner-list">
+                                    <ul>
+                                        <% oneLiners.forEach(item => { %>
+                                            <li><%= item.text %></li>
+                                        <% }) %>
+                                    </ul>
+                                </div>
+                            <% } %>
+
+                            <% if (fullNarratives.length > 0) { %>
+                                <% fullNarratives.forEach(item => { %>
+                                    <div class="full-narrative-card">
+                                        <h4>Newsletter: <%= item.from %></h4>
+                                        <p><%= item.text %></p>
+                                    </div>
+                                <% }) %>
+                            <% } %>
                         </div>
                     <% } %>
                 <% }) %>
@@ -128,9 +169,14 @@
                 <h2 id="github-heading">GitHub Release Updates</h2>
                 
                 <% briefing.githubUpdates.forEach(siteData => { %>
-                    <% if (briefing.summaries[siteData.site]) { %>
-                        <div class="summary">
-                            <%- briefing.summaries[siteData.site] %>
+                    <% const summaryData = briefing.summaries[siteData.site]; %>
+                    <% if (summaryData && summaryData.items) { %>
+                        <div class="one-liner-list">
+                            <ul>
+                                <% summaryData.items.forEach(item => { %>
+                                    <li><%= item.text %></li>
+                                <% }) %>
+                            </ul>
                         </div>
                     <% } %>
                 <% }) %>
@@ -143,9 +189,17 @@
                 <h2 id="news-heading">Today's News</h2>
                 
                 <% briefing.todaysNews.forEach(siteData => { %>
-                    <% if (briefing.summaries[siteData.site]) { %>
-                        <div class="summary">
-                            <%- briefing.summaries[siteData.site] %>
+                    <% const summaryData = briefing.summaries[siteData.site]; %>
+                    <% if (summaryData && summaryData.items) { %>
+                        <div class="summary-container">
+                            <h3><%= siteData.site %></h3>
+                            <div class="one-liner-list">
+                                <ul>
+                                    <% summaryData.items.forEach(item => { %>
+                                        <li><%= item.text %></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
                         </div>
                     <% } %>
                 <% }) %>

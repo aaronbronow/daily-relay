@@ -63,6 +63,11 @@
 - **Timezone-Aware All-Day Tasks:** All-day tasks (midnight UTC) require local `YYYY-MM-DD` comparisons to avoid being miscategorized as "Past Due" or "Tomorrow" due to time offsets. Using `toLocaleDateString('en-CA')` provides a reliable YYYY-MM-DD format for comparisons.
 - **Task Completion Feedback:** Tracking tasks completed "Today" allows for encouraging status messages like "All tasks for today are completed!", providing a more accurate daily overview.
 - **Conversational Conjunctions:** Using natural language logic (e.g., "1 task" vs "2 tasks", and the Oxford comma) in code-based summaries improves readability without the overhead or unpredictability of an LLM.
+- **Docker Service Consolidation:** Boot loops can be caused by stale/corrupted anonymous volumes or naming conflicts. Consolidating into a single, consistently named service (e.g., `app`) with explicit `image` tags improves container stability and reliability.
+- **Tiered Intelligence Model:** Implementing distinct "One-Liner" and "Full Narrative" modes prevents TTS fatigue. Moving from a one-size-fits-all approach to tiered summarization allows for a more natural rhythm in the daily briefing.
+- **Code-Level Structural Inference:** Using cheap code-based metrics (headings > 3, links > 25, length > 5000) is an effective pre-AI filter to determine summarization depth without the latency or cost of a "guessing" AI pass.
+- **Deterministic Overrides:** Manual sender-level overrides in `sources.yaml` are essential to correct edge cases where transactional boilerplate (like bank statements) might otherwise trigger long-form "newsletter" inference.
+- **Indented Narrative Cards:** Pulling long narratives into distinct, card-like containers with unique styling (indented with left borders) improves visual hierarchy and solves nested list depth issues in the EJS template.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.

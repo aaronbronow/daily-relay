@@ -80,7 +80,16 @@ async function collect(config) {
                   const subject = parsed.subject || '(No Subject)';
                   const date = parsed.date || new Date();
                   const from = parsed.from ? (parsed.from.value[0].name || parsed.from.value[0].address) : 'Unknown Sender';
+                  const fromAddress = (parsed.from && parsed.from.value[0].address) || '';
                   
+                  // Extract metrics for tiered summarization
+                  const html = parsed.html || '';
+                  const text = parsed.text || '';
+                  const headingCount = (html.match(/<h[1-6]/gi) || []).length;
+                  const linkCount = (html.match(/<a\b/gi) || []).length;
+                  const listCount = (html.match(/<(ul|ol)\b/gi) || []).length;
+                  const bodyLength = (text || html).length;
+
                   // Extract a clean text snippet
                   let snippet = '';
                   const hasText = parsed.text && parsed.text.trim().length > 0;
@@ -99,9 +108,16 @@ async function collect(config) {
                   items.push({
                     title: subject,
                     from: from,
+                    fromAddress: fromAddress,
                     description: snippet,
                     url: '',
-                    timestamp: date.toISOString()
+                    timestamp: date.toISOString(),
+                    metrics: {
+                      headings: headingCount,
+                      links: linkCount,
+                      lists: listCount,
+                      length: bodyLength
+                    }
                   });
                 }).catch(err => console.error(`[imapCollector] Parse error for message in ${SITE_NAME}:`, err))
                   .finally(() => resolveMsg());

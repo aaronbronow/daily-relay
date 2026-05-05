@@ -1,9 +1,10 @@
 services:
-  daily-relay:
+  app:
     build:
       context: .
       network: host
     network_mode: host
+    image: daily-relay-app
     env_file: .env
     volumes:
       - ./data:/app/data
