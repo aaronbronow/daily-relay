@@ -8,6 +8,7 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 - **Per-Item AI Summarization:** Individual, focused prose summaries for every single news item and email using a local Ollama instance.
 - **AI Health Check:** Automatically pings Ollama and bypasses AI calls if unreachable, with graceful UI fallbacks to cached summaries.
 - **Customizable AI Prompts:** System prompts are decentralized in `sources.yaml`, allowing for per-source tuning (e.g., active voice for emails, verbatim mode for news).
+- **Complexity-Driven Summarization:** Automatically ranks emails on a 0-8 complexity scale (`Cpx`) to intelligently route items between "One-Liner" and "Full Narration" modes.
 - **Context-Aware Briefings:** Utilizes RSS descriptions and email body snippets to provide accurate, high-quality summaries.
 - **Resilient State Management:** Automatically carries forward last known good data and summaries if a collector fails or times out.
 - **Accessibility Optimized:** Optimized for Chrome's "Reading Mode" and TTS agents (links are hidden from automated readers).
@@ -48,6 +49,14 @@ A minimalist, self-hosted news aggregator that collates logs, newsletters, and w
 - **Re-authorize Google Tasks:**
     ```bash
     docker exec -it daily-relay-daily-relay-1 node src/utils/getGoogleToken.js
+    ```
+- **Analyze Email Complexity:**
+    ```bash
+    # Live analysis (connects to IMAP)
+    npm run analyze-emails
+
+    # Cache-based analysis (offline)
+    npm run analyze-emails:cache
     ```
 - **Test Prompts:**
     ```bash

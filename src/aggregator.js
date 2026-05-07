@@ -357,11 +357,11 @@ async function aggregate() {
                 mode = override.narrator_mode;
                 console.log(`[Aggregator] Applying override for ${item.fromAddress}: ${mode}`);
               } else {
-                // 2. Inference algorithm
+                // 2. Inference algorithm using the calculated complexity index (Cpx)
                 const m = item.metrics || {};
-                if (m.headings > 3 || m.links > 25 || m.length > 5000) {
+                if (m.cpx >= 3) {
                   mode = 'full-narrative';
-                  console.log(`[Aggregator] Inferring full-narrative for ${item.fromAddress} (L:${m.length}, H:${m.headings}, Ln:${m.links})`);
+                  console.log(`[Aggregator] Inferring full-narrative for ${item.fromAddress} (Cpx: ${m.cpx})`);
                 }
               }
             }

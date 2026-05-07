@@ -6,8 +6,58 @@ const path = require('path');
 require('dotenv').config();
 
 const SOURCES_FILE = path.join(__dirname, '../sources.yaml');
+const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 
 async function analyzeEmails() {
+  const args = process.argv.slice(2);
+  const useCache = args.includes('--cache');
+
+  if (useCache) {
+    console.log("Analyzing from cache...");
+    try {
+      const cacheRaw = fs.readFileSync(CACHE_FILE, 'utf8');
+      const cache = JSON.parse(cacheRaw);
+      const emailSources = cache.emailUpdates || [];
+      
+      const metrics = [];
+      for (const source of emailSources) {
+        for (const item of source.items || []) {
+          const m = item.metrics || {};
+          const len = m.length || 0;
+          const h = m.headings || 0;
+          const l = m.links || 0;
+          const ls = m.lists || 0;
+
+          // Recalculate cpx in case it wasn't in cache
+          const cpx = m.cpx !== undefined ? m.cpx : 
+                      (len > 5000 ? 3 : len > 2000 ? 1 : 0) + 
+                      (h > 3 ? 2 : 0) + 
+                      (l > 25 ? 2 : 0) + 
+                      (ls > 0 ? 1 : 0);
+
+          const lenStr = (len >= 1024 ? (len / 1024).toFixed(1) + 'k' : len).toString().padStart(5);
+          const hStr = h.toString().padStart(2);
+          const aStr = l.toString().padStart(3);
+          const lStr = ls.toString().padStart(2);
+          const meter = '[' + '●'.repeat(cpx) + '○'.repeat(8 - cpx) + ']';
+
+          metrics.push({
+            From: (item.from || 'Unknown').substring(0, 12),
+            Subj: (item.title || '(No Subject)').substring(0, 35),
+            'Len H A L [Cpx]': `${lenStr} ${hStr} ${aStr} ${lStr} ${meter}`
+          });
+        }
+      }
+
+      console.log("\n--- Email Metrics Analysis (From Cache) ---");
+      console.table(metrics);
+      return;
+    } catch (err) {
+      console.error("Error reading cache:", err.message);
+      process.exit(1);
+    }
+  }
+
   // Load Gmail config from sources.yaml
   let sourcesConfig = { sources: [] };
   try {
@@ -87,15 +137,27 @@ async function analyzeEmails() {
                   const linkMatches = html.match(/<a\b/gi) || [];
                   const listMatches = html.match(/<(ul|ol)\b/gi) || [];
 
+                  const len = (text || html).length;
+                  const h = headingMatches.length;
+                  const l = linkMatches.length;
+                  const ls = listMatches.length;
+
+                  // Complexity index (0-8 scale) based on structural thresholds
+                  const cpx = (len > 5000 ? 3 : len > 2000 ? 1 : 0) + 
+                              (h > 3 ? 2 : 0) + 
+                              (l > 25 ? 2 : 0) + 
+                              (ls > 0 ? 1 : 0);
+
+                  const lenStr = (len >= 1024 ? (len / 1024).toFixed(1) + 'k' : len).toString().padStart(5);
+                  const hStr = h.toString().padStart(2);
+                  const aStr = l.toString().padStart(3);
+                  const lStr = ls.toString().padStart(2);
+                  const meter = '[' + '●'.repeat(cpx) + '○'.repeat(8 - cpx) + ']';
+
                   metrics.push({
-                    Sender: (parsed.from && parsed.from.value[0].address) || 'Unknown',
-                    Subject: (parsed.subject || '(No Subject)').substring(0, 40),
-                    Time: parsed.date ? parsed.date.toLocaleTimeString() : 'N/A',
-                    'Has Text': text.trim().length > 0,
-                    Length: (text || html).length,
-                    Headings: headingMatches.length,
-                    Links: linkMatches.length,
-                    Lists: listMatches.length
+                    From: ((parsed.from && parsed.from.value[0].address) || 'Unknown').substring(0, 12),
+                    Subj: (parsed.subject || '(No Subject)').substring(0, 35),
+                    'Len H A L [Cpx]': `${lenStr} ${hStr} ${aStr} ${lStr} ${meter}`
                   });
                 }).catch(err => console.error("Parse error:", err))
                   .finally(() => resolveMsg());

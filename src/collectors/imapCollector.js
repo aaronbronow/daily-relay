@@ -90,6 +90,12 @@ async function collect(config) {
                   const listCount = (html.match(/<(ul|ol)\b/gi) || []).length;
                   const bodyLength = (text || html).length;
 
+                  // Complexity index (0-8 scale) based on structural thresholds
+                  const cpx = (bodyLength > 5000 ? 3 : bodyLength > 2000 ? 1 : 0) + 
+                              (headingCount > 3 ? 2 : 0) + 
+                              (linkCount > 25 ? 2 : 0) + 
+                              (listCount > 0 ? 1 : 0);
+
                   // Extract a clean text snippet
                   let snippet = '';
                   const hasText = parsed.text && parsed.text.trim().length > 0;
@@ -116,7 +122,8 @@ async function collect(config) {
                       headings: headingCount,
                       links: linkCount,
                       lists: listCount,
-                      length: bodyLength
+                      length: bodyLength,
+                      cpx: cpx
                     }
                   });
                 }).catch(err => console.error(`[imapCollector] Parse error for message in ${SITE_NAME}:`, err))

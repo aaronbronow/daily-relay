@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "collect": "node src/aggregator.js",
     "aggregate": "node src/aggregator.js",
-    "analyze-emails": "node tests/emailAnalyzer.js"
+    "analyze-emails": "node tests/emailAnalyzer.js",
+    "analyze-emails:cache": "node tests/emailAnalyzer.js --cache"
   },
   "repository": {
     "type": "git",

@@ -68,6 +68,9 @@
 - **Code-Level Structural Inference:** Using cheap code-based metrics (headings > 3, links > 25, length > 5000) is an effective pre-AI filter to determine summarization depth without the latency or cost of a "guessing" AI pass.
 - **Deterministic Overrides:** Manual sender-level overrides in `sources.yaml` are essential to correct edge cases where transactional boilerplate (like bank statements) might otherwise trigger long-form "newsletter" inference.
 - **Indented Narrative Cards:** Pulling long narratives into distinct, card-like containers with unique styling (indented with left borders) improves visual hierarchy and solves nested list depth issues in the EJS template.
+- **Complexity Indexing (Cpx):** Implementing a deterministic 0-8 complexity score (based on length, headings, links, and lists) provides a robust, pre-AI signal to route items between "One-Liner" and "Full Narration" modes, ensuring optimal briefing depth without over-processing simple notifications.
+- **Fixed-Width Table Alignment:** In console tools, using `padStart()`/`padEnd()` to enforce fixed character widths for individual metrics within a merged string column allows for perfect vertical alignment of visual meters (like `[●●●○○○○○]`) despite varying numeric values.
+- **Cache-Based Analysis:** Implementing a `--cache` flag in diagnostic tools allows for rapid iteration on UI/reporting logic without the latency or connection risk of re-fetching live data from sensitive protocols like IMAP.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.

@@ -65,6 +65,8 @@
 - [x] Implement true isolation for targeted runs (skipping AI calls for cached sources).
 - [x] Implement `--force` flag to bypass version-matching logic and force re-summarization.
 - [x] **Tiered Email Summarization**: Implement structural inference and sender overrides for one-liner vs. full-narrative modes.
+- [x] **Complexity Index (Cpx)**: Implement a standardized 0-8 complexity score in the collector and aggregator to drive summarization depth (Complete).
+- [x] **Enhanced Analyzer**: Upgrade `tests/emailAnalyzer.js` with a 90-column visual table, a `--cache` flag for offline analysis, and a complexity meter (Complete).
 
 ### Phase 5: Seasonal Context & Curated History (Complete)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
@@ -86,6 +88,7 @@
 - [ ] **Gemini Sync**: (Optional) Add `rclone` script to push `index.html` to Google Drive for @Workspace chat access.
 
 ## 5. Metadata & Constraints
+- **Complexity Index (Cpx):** A 0-8 scale based on length (3pt), headings (2pt), links (2pt), and lists (1pt). Scores >= 3 trigger "Full Narration."
 - **IMAP Stability:** Sequential execution and explicit process exit are mandatory to prevent socket hangs in containers.
 - **AI Focus:** Providing descriptions to Ollama at an item-level produces significantly better briefings than site-level concatenation.
 - **Reading Mode:** Content outside `<main>` wrapped in `<details>` or simply placed in `<aside>` is the most effective way to optimize for agent-driven consumption.
