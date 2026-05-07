@@ -124,22 +124,41 @@
         }
         .one-liner-list ul { margin: 0; padding-left: 1.2rem; }
         
-        .full-narrative-card {
-            background: var(--narrative-bg);
-            border-left: 4px solid var(--narrative-border);
-            padding: 1.2rem 1.5rem;
-            border-radius: 0 8px 8px 0;
-            margin: 1rem 0 1rem 2rem;
-            box-shadow: 0 1px 3px var(--article-shadow);
-            font-size: 0.95rem;
-            line-height: 1.5;
+        /* Unified Email Stream */
+        .email-stream {
+            background: var(--one-liner-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
         }
-        .full-narrative-card h4 {
+        .email-item {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--header-border);
+        }
+        .email-item:last-child {
+            border-bottom: none;
+        }
+        .email-item.is-one-liner {
+            font-size: 0.95rem;
+        }
+        .email-item.is-full-narrative {
+            display: flex;
+            flex-direction: column;
+        }
+        .email-item.is-full-narrative h4 {
             margin: 0 0 0.5rem 0;
             font-size: 0.9rem;
             color: var(--narrative-h4);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }
+        .narrative-content {
+            border-left: 3px solid var(--narrative-border);
+            padding-left: 1.2rem;
+            margin-left: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-color);
         }
         
         .warning-banner {
@@ -270,28 +289,21 @@
                 <% briefing.emailUpdates.forEach(siteData => { %>
                     <% const summaryData = briefing.summaries[siteData.site]; %>
                     <% if (summaryData && summaryData.items) { %>
-                        <div class="summary-container">
-                            <% const oneLiners = summaryData.items.filter(item => item.mode === 'one-liner'); %>
-                            <% const fullNarratives = summaryData.items.filter(item => item.mode === 'full-narrative'); %>
-
-                            <% if (oneLiners.length > 0) { %>
-                                <div class="one-liner-list">
-                                    <ul>
-                                        <% oneLiners.forEach(item => { %>
-                                            <li><%= item.text %></li>
-                                        <% }) %>
-                                    </ul>
-                                </div>
-                            <% } %>
-
-                            <% if (fullNarratives.length > 0) { %>
-                                <% fullNarratives.forEach(item => { %>
-                                    <div class="full-narrative-card">
+                        <div class="email-stream">
+                            <% summaryData.items.forEach(item => { %>
+                                <% if (item.mode === 'full-narrative') { %>
+                                    <div class="email-item is-full-narrative">
                                         <h4>Newsletter: <%= item.from %></h4>
-                                        <p><%= item.text %></p>
+                                        <div class="narrative-content">
+                                            <%= item.text %>
+                                        </div>
                                     </div>
-                                <% }) %>
-                            <% } %>
+                                <% } else { %>
+                                    <div class="email-item is-one-liner">
+                                        <%= item.text %>
+                                    </div>
+                                <% } %>
+                            <% }) %>
                         </div>
                     <% } %>
                 <% }) %>
