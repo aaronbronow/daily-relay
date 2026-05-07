@@ -74,7 +74,7 @@
 - [x] **Curated History**: Exhaustive Wikimedia fetcher with code-level interest filtering and dynamic source links.
 - [x] **Google Tasks**: Multi-list fetcher with code-based natural language briefing and task completion tracking.
 - [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
-- [x] **GitHub Releases**: Aggregator for software updates with item-level AI summarization.
+- [x] **GitHub Releases**: Aggregator for software updates via public RSS/Atom feeds (Complete).
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
 - [ ] **Log Tailer**: Implement `logCollector.js` to extract status from Unraid job output files.

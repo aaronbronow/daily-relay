@@ -148,7 +148,6 @@ sources:
     type: "tasks"
   - name: "GitHub Releases"
     type: "github"
-    token_env: "GITHUB_TOKEN"
     repos:
       - "cjpais/Handy"
       - "yaml/yamlscript"
