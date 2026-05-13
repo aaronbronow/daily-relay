@@ -439,23 +439,35 @@ Summary:`;
                 return null;
               }
 
-              let text = summary;
+              const relativeDate = getBriefingRelativeDate(item.timestamp);
+              let metaSource = '';
+
               if (isEmail) {
-                const relativeDate = getBriefingRelativeDate(item.timestamp);
-                text = `From ${item.from}, ${relativeDate}: ${summary}`;
+                metaSource = item.from;
               } else if (isGithub) {
-                const relativeDate = getBriefingRelativeDate(item.timestamp);
-                text = `${item.site}, ${item.version}, ${relativeDate}: ${summary}`;
+                metaSource = `${item.site} (${item.version})`;
+              } else {
+                metaSource = siteData.site;
               }
 
+              let parsedSummary = '';
               // Parse Markdown to HTML for rendering
               if (mode === 'full-narrative') {
-                text = await marked.parse(text);
+                parsedSummary = await marked.parse(summary);
               } else {
-                text = await marked.parseInline(text);
+                parsedSummary = await marked.parseInline(summary);
               }
 
-              return { text, mode, from: item.from, title: item.title, timestamp: item.timestamp };
+              return { 
+                preamble: `${metaSource} • ${relativeDate}`, // Keep for backward compatibility/title
+                metaSource, 
+                metaDate: relativeDate,
+                summary: parsedSummary, 
+                mode, 
+                from: item.from, 
+                title: item.title, 
+                timestamp: item.timestamp 
+              };
 
             }
           } catch (err) {

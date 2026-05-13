@@ -85,6 +85,7 @@
 - [x] **UI Error Reporting**: Implement visible warning banners in `briefing.ejs` for connection failures and stale cache fallback.
 
 ### Phase 7: Mobile & Agent Refinement
+- [x] **Condensed RSS UI**: Transitioned to a grid-based, high-density layout with metadata columns for superior scan speed (Complete).
 - [ ] **Mobile CSS**: Finalize "Reader Mode" CSS specifically for mobile Chrome and Safari.
 - [ ] **Gemini Sync**: (Optional) Add `rclone` script to push `index.html` to Google Drive for @Workspace chat access.
 

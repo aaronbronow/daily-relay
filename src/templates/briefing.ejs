@@ -18,6 +18,8 @@
             --hr-border: #dddddd;
             --link-color: #007bff;
             --one-liner-bg: #f1f3f5;
+            --stream-bg: #fdfdfd;
+            --stream-border: #cccccc;
             --narrative-bg: #ffffff;
             --narrative-border: #6c757d;
             --narrative-h4: #666666;
@@ -41,6 +43,8 @@
             --hr-border: #444444;
             --link-color: #58a6ff;
             --one-liner-bg: #333333;
+            --stream-bg: #222222;
+            --stream-border: #444444;
             --narrative-bg: #252525;
             --narrative-border: #888888;
             --narrative-h4: #aaaaaa;
@@ -65,6 +69,8 @@
                 --hr-border: #444444;
                 --link-color: #58a6ff;
                 --one-liner-bg: #333333;
+                --stream-bg: #222222;
+                --stream-border: #444444;
                 --narrative-bg: #252525;
                 --narrative-border: #888888;
                 --narrative-h4: #aaaaaa;
@@ -101,6 +107,11 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px var(--article-shadow);
         }
+        #status article {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            padding: 1.2rem;
+        }
         h2 { color: var(--h2-color); border-left: 4px solid var(--h2-border); padding-left: 10px; }
         h3 { color: var(--h3-color); margin-top: 1.5rem; }
         hr {
@@ -116,49 +127,64 @@
         .summary-container {
             margin-bottom: 2rem;
         }
-        .one-liner-list {
-            background: var(--one-liner-bg);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-        .one-liner-list ul { margin: 0; padding-left: 1.2rem; }
         
-        /* Unified Email Stream */
-        .email-stream {
-            background: var(--one-liner-bg);
+        /* High Density RSS-style Grid UI */
+        .stream-container {
+            background: var(--stream-bg);
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 1.5rem;
+            border: 1px solid var(--stream-border);
         }
-        .email-item {
-            padding: 1.2rem 1.5rem;
+        .rss-row {
+            padding: 0.4rem 1.2rem 0.4rem 3.5rem; /* Base left margin (1.2rem) + Hanging indent (2.3rem) */
             border-bottom: 1px solid var(--header-border);
+            font-size: 0.85rem;
+            line-height: 1.3;
+            clear: both;
+            overflow: hidden; /* Clearfix */
         }
-        .email-item:last-child {
+        .rss-row:hover {
+            background: var(--article-bg);
+        }
+        .rss-row:last-child {
             border-bottom: none;
         }
-        .email-item.is-one-liner {
-            font-size: 0.95rem;
-        }
-        .email-item.is-full-narrative {
+        .item-metadata {
+            float: left;
+            width: 170px;
+            margin-left: -2.3rem; /* Pull back metadata but leave the 1.2rem base margin */
+            margin-right: 1.2rem;
+            color: var(--footer-text);
+            font-weight: 500;
+            font-size: 0.7rem;
+            line-height: 1.3;
+            padding-top: 0.12rem; /* Nudge down to align baseline with 0.85rem / 1.3 line-height */
             display: flex;
-            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden;
         }
-        .email-item.is-full-narrative h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.9rem;
-            color: var(--narrative-h4);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .meta-source {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-shrink: 1;
         }
-        .narrative-content {
-            border-left: 3px solid var(--narrative-border);
-            padding-left: 1.2rem;
-            margin-left: 0.5rem;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: var(--text-color);
+        .meta-date {
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: 0.2rem;
+        }
+        .item-summary {
+            /* Flows naturally around the float, wraps to the 2.5rem indent */
+            text-align: justify;
+            hyphens: auto;
+        }
+        .item-summary p {
+            margin: 0;
+        }
+        .item-summary p + p {
+            margin-top: 0.4rem;
         }
         
         .warning-banner {
@@ -289,20 +315,17 @@
                 <% briefing.emailUpdates.forEach(siteData => { %>
                     <% const summaryData = briefing.summaries[siteData.site]; %>
                     <% if (summaryData && summaryData.items) { %>
-                        <div class="email-stream">
+                        <div class="stream-container">
                             <% summaryData.items.forEach(item => { %>
-                                <% if (item.mode === 'full-narrative') { %>
-                                    <div class="email-item is-full-narrative">
-                                        <h4>Newsletter: <%= item.from %></h4>
-                                        <div class="narrative-content">
-                                            <%- item.text %>
-                                        </div>
+                                <div class="rss-row">
+                                    <div class="item-metadata" title="<%= item.preamble %>">
+                                        <span class="meta-source"><%= item.metaSource %></span>
+                                        <span class="meta-date">• <%= item.metaDate %></span>
                                     </div>
-                                <% } else { %>
-                                    <div class="email-item is-one-liner">
-                                        <%- item.text %>
+                                    <div class="item-summary">
+                                        <%- item.summary %>
                                     </div>
-                                <% } %>
+                                </div>
                             <% }) %>
                         </div>
                     <% } %>
@@ -318,12 +341,18 @@
                 <% briefing.githubUpdates.forEach(siteData => { %>
                     <% const summaryData = briefing.summaries[siteData.site]; %>
                     <% if (summaryData && summaryData.items) { %>
-                        <div class="one-liner-list">
-                            <ul>
-                                <% summaryData.items.forEach(item => { %>
-                                    <li><%- item.text %></li>
-                                <% }) %>
-                            </ul>
+                        <div class="stream-container">
+                            <% summaryData.items.forEach(item => { %>
+                                <div class="rss-row">
+                                    <div class="item-metadata" title="<%= item.preamble %>">
+                                        <span class="meta-source"><%= item.metaSource %></span>
+                                        <span class="meta-date">• <%= item.metaDate %></span>
+                                    </div>
+                                    <div class="item-summary">
+                                        <%- item.summary %>
+                                    </div>
+                                </div>
+                            <% }) %>
                         </div>
                     <% } %>
                 <% }) %>
@@ -338,15 +367,18 @@
                 <% briefing.todaysNews.forEach(siteData => { %>
                     <% const summaryData = briefing.summaries[siteData.site]; %>
                     <% if (summaryData && summaryData.items) { %>
-                        <div class="summary-container">
-                            <h3><%= siteData.site %></h3>
-                            <div class="one-liner-list">
-                                <ul>
-                                    <% summaryData.items.forEach(item => { %>
-                                        <li><%- item.text %></li>
-                                    <% }) %>
-                                </ul>
-                            </div>
+                        <div class="stream-container">
+                            <% summaryData.items.forEach(item => { %>
+                                <div class="rss-row">
+                                    <div class="item-metadata" title="<%= item.preamble %>">
+                                        <span class="meta-source"><%= item.metaSource %></span>
+                                        <span class="meta-date">• <%= item.metaDate %></span>
+                                    </div>
+                                    <div class="item-summary">
+                                        <%- item.summary %>
+                                    </div>
+                                </div>
+                            <% }) %>
                         </div>
                     <% } %>
                 <% }) %>
