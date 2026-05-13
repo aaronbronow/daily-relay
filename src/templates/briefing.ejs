@@ -295,12 +295,12 @@
                                     <div class="email-item is-full-narrative">
                                         <h4>Newsletter: <%= item.from %></h4>
                                         <div class="narrative-content">
-                                            <%= item.text %>
+                                            <%- item.text %>
                                         </div>
                                     </div>
                                 <% } else { %>
                                     <div class="email-item is-one-liner">
-                                        <%= item.text %>
+                                        <%- item.text %>
                                     </div>
                                 <% } %>
                             <% }) %>
@@ -321,7 +321,7 @@
                         <div class="one-liner-list">
                             <ul>
                                 <% summaryData.items.forEach(item => { %>
-                                    <li><%= item.text %></li>
+                                    <li><%- item.text %></li>
                                 <% }) %>
                             </ul>
                         </div>
@@ -343,7 +343,7 @@
                             <div class="one-liner-list">
                                 <ul>
                                     <% summaryData.items.forEach(item => { %>
-                                        <li><%= item.text %></li>
+                                        <li><%- item.text %></li>
                                     <% }) %>
                                 </ul>
                             </div>

@@ -375,6 +375,7 @@ async function aggregate() {
 3. DO NOT include any conversational preamble or introductory text.
 4. STICK TO THE FACTS: Use ONLY information provided in the <content> tag.
 5. NOISE REDUCTION: Ignore advertisements, legal footers, and social media links.
+6. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.
 </instructions>
 
 <content>
@@ -386,7 +387,7 @@ Content: ${item.description || 'N/A'}
 Narration:`;
             } else {
               // Default one-liner
-              prompt = `${siteData.system_prompt || 'Summarize the following email into exactly ONE concise, active-voice sentence.'}\n\n<content>\nFrom: ${item.from}\nSubject: ${item.title}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
+              prompt = `${siteData.system_prompt || 'Summarize the following email into exactly ONE concise, active-voice sentence. If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.'}\n\n<content>\nFrom: ${item.from}\nSubject: ${item.title}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
             }
           } else if (siteData.system_prompt) {
             prompt = `${siteData.system_prompt}\n\n<content>\n${isGithub ? `Title: ${item.title}` : `Title: ${item.title}`}\nDescription: ${item.description || 'N/A'}\n</content>\n\nSummary:`;
@@ -406,6 +407,7 @@ ${isGithub ? '4. Summarize the key features or changes in this release. Focus on
 ${(!isEmail && !isGithub) ? '4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.' : ''}
 5. NOISE REDUCTION: For security notices, DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
 6. If the item is not interesting or relevant, output "No significant update."
+7. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.
 </instructions>
 
 <content>
@@ -446,7 +448,15 @@ Summary:`;
                 text = `${item.site}, ${item.version}, ${relativeDate}: ${summary}`;
               }
 
+              // Parse Markdown to HTML for rendering
+              if (mode === 'full-narrative') {
+                text = await marked.parse(text);
+              } else {
+                text = await marked.parseInline(text);
+              }
+
               return { text, mode, from: item.from, title: item.title, timestamp: item.timestamp };
+
             }
           } catch (err) {
             console.warn(`[Aggregator] Item summary failed for ${siteData.site}:`, err.message);

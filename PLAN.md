@@ -67,6 +67,7 @@
 - [x] **Tiered Email Summarization**: Implement structural inference and sender overrides for one-liner vs. full-narrative modes.
 - [x] **Complexity Index (Cpx)**: Implement a standardized 0-8 complexity score in the collector and aggregator to drive summarization depth (Complete).
 - [x] **Enhanced Analyzer**: Upgrade `tests/emailAnalyzer.js` with a 90-column visual table, a `--cache` flag for offline analysis, and a complexity meter (Complete).
+- [x] **Markdown Link Enforcement**: Implement global prompt rules to force Markdown formatting for URLs and parse them in the UI for TTS optimization (Complete).
 
 ### Phase 5: Seasonal Context & Curated History (Complete)
 - [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.

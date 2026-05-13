@@ -12,6 +12,7 @@ sources:
       3. DO NOT include any conversational preamble or introductory text.
       4. VERBATIM MODE: Use the provided title verbatim if it is clear. DO NOT add names of authors, creators, or additional historical context.
       5. If the item is not interesting or relevant, output "No significant update."
+      6. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.
       </instructions>
   - name: "Ubuntu Security Notices"
     type: "rss"
@@ -26,6 +27,7 @@ sources:
       3. DO NOT include any conversational preamble or introductory text.
       4. NOISE REDUCTION: DO NOT include tracking numbers (e.g., USN-XXXX, CVE-XXXX). Focus on the software and the vulnerability.
       5. If the item is not interesting or relevant, output "No significant update."
+      6. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.
       </instructions>
   - name: "Gmail Updates"
     type: "imap"
@@ -67,6 +69,7 @@ sources:
       5. DO NOT assume the nature of an event (e.g., flight, appointment) if it is not explicitly stated.
       6. If the description is missing, focus ONLY on the subject line verbatim.
       7. If the item is not interesting or relevant, output "No significant update."
+      8. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Source](url)). NEVER include a raw URL in the text.
       </instructions>
   - name: "Wikimedia History"
     type: "history"
@@ -143,6 +146,7 @@ sources:
       5. VERBATIM DATE: State the date as "On this day in [Year]". DO NOT change the month or day.
       6. STICK TO THE FACTS: Use ONLY information provided in the <content> tag.
       7. Output ONLY the raw text of the sentence.
+      8. LINK FORMATTING: If you include a URL, you MUST format it as a markdown link with descriptive text (e.g., [View Link](url)). NEVER include a raw URL in the text.
       </instructions>
   - name: "Google Tasks"
     type: "tasks"

@@ -71,6 +71,7 @@
 - **Complexity Indexing (Cpx):** Implementing a deterministic 0-8 complexity score (based on length, headings, links, and lists) provides a robust, pre-AI signal to route items between "One-Liner" and "Full Narration" modes, ensuring optimal briefing depth without over-processing simple notifications.
 - **Fixed-Width Table Alignment:** In console tools, using `padStart()`/`padEnd()` to enforce fixed character widths for individual metrics within a merged string column allows for perfect vertical alignment of visual meters (like `[●●●○○○○○]`) despite varying numeric values.
 - **Cache-Based Analysis:** Implementing a `--cache` flag in diagnostic tools allows for rapid iteration on UI/reporting logic without the latency or connection risk of re-fetching live data from sensitive protocols like IMAP.
+- **Markdown Link Enforcement:** Instructing the AI to format all URLs as descriptive Markdown links (`[Label](url)`) significantly improves the Text-to-Speech (TTS) experience by preventing the reader from spelling out long URLs while preserving functionality for visual users.
 
 ## Technical Debt & Overrides
 - **semver@5.7.2**: Manually overridden in `package.json` to fix a ReDoS vulnerability in `utf7` (a dependency of `imap`). Re-evaluate this override if `imap-simple` or `imap` are updated.
