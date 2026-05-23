@@ -459,9 +459,8 @@ Summary:`;
                 metaSource = siteData.site;
               }
 
-              let parsedSummary = '';
-              // Parse Markdown to HTML for rendering
-              if (mode === 'full-narrative') {
+              const hasBlockElements = summary.includes('\n') || /^\s*[-*•●○+]/m.test(summary);
+              if (mode === 'full-narrative' || hasBlockElements) {
                 parsedSummary = await marked.parse(summary);
               } else {
                 parsedSummary = await marked.parseInline(summary);
