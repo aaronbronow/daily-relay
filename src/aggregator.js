@@ -229,7 +229,7 @@ async function aggregate() {
               const historyUrl = data.history.source_url;
               const historyLabel = data.history.source_name || "Source";
               if (historyUrl) {
-                historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 0.7rem; vertical-align: super; text-decoration: none; background: #eee; padding: 1px 6px; border-radius: 10px; color: #555; margin-left: 4px;">Source: ${historyLabel}</a>`;
+                historyPart += ` <a href="${historyUrl}" target="_blank" rel="noopener noreferrer" class="history-source-link">Source: ${historyLabel}</a>`;
               }
               
               data._historyBrief = historyPart; // Store raw text for potential reuse
@@ -295,7 +295,8 @@ async function aggregate() {
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
             const listItems = futureTasks.map(t => `- ${getTaskDisplay(t)}`).join("\n");
-            parts.push(`There ${verb} ${count} other ${noun} this week:\n${listItems}`);
+            const otherWord = (pastDueAndToday.length > 0 || completedToday.length > 0) ? "other " : "";
+            parts.push(`There ${verb} ${count} ${otherWord}${noun} this week:\n${listItems}`);
           }
           tasksPart = parts.join("\n\n");
         }
