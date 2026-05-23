@@ -359,9 +359,26 @@ async function run() {
     // A. Deterministic Check
     const deterministic = deterministicEvaluation(responseText, variant.id);
 
-    // B. LLM Judge
-    console.log(`Requesting LLM-as-a-judge scoring...`);
-    const judge = await llmEvaluation(sourceItem.description, responseText, variant.name);
+    // B. LLM Judge with Token & Latency Saving Pre-Filter
+    let judge;
+    let llmJudgeSkipped = false;
+
+    // Skip LLM judge if the variant has deterministic failures to save money and latency
+    const hasDeterministicFailures = deterministic.score < 10.0;
+
+    if (hasDeterministicFailures) {
+      llmJudgeSkipped = true;
+      console.log(`\n\x1b[33m[Token Optimization] Skipped LLM judge pass due to deterministic check failure: ${deterministic.deductions.join(', ')}\x1b[0m`);
+      judge = {
+        conciseness: Math.max(1, Math.round(deterministic.score / 2)),
+        no_boilerplate: deterministic.hasBoilerplate ? 1 : 10,
+        formatting_readability: (deterministic.hasBuildNumber || deterministic.hasRawUrl) ? 1 : 10,
+        justification: `Skipped LLM judge to save tokens due to deterministic check failure: ${deterministic.deductions.join('; ')}`
+      };
+    } else {
+      console.log(`Requesting LLM-as-a-judge scoring...`);
+      judge = await llmEvaluation(sourceItem.description, responseText, variant.name);
+    }
     
     // Calculate composite score
     // Deterministic counts for 50%, LLM judge average counts for 50%
@@ -369,7 +386,7 @@ async function run() {
     const compositeScore = ((deterministic.score + judgeAvg) / 2).toFixed(1);
 
     console.log(`Deterministic Score: ${deterministic.score}/10`);
-    console.log(`LLM Judge Score:     ${judgeAvg.toFixed(1)}/10`);
+    console.log(`LLM Judge Score:     ${judgeAvg.toFixed(1)}/10${llmJudgeSkipped ? ' (Skipped)' : ''}`);
     console.log(`  - Conciseness:     ${judge.conciseness}/10`);
     console.log(`  - Preamble/Noise:  ${judge.no_boilerplate}/10`);
     console.log(`  - Formatting:      ${judge.formatting_readability}/10`);
@@ -384,6 +401,7 @@ async function run() {
       output: responseText,
       deterministic,
       judge,
+      llmJudgeSkipped,
       finalScore: parseFloat(compositeScore)
     });
   }
@@ -406,7 +424,8 @@ async function run() {
   const best = sorted[0];
 
   results.forEach(r => {
-    console.log(`${r.name.padEnd(42)} | Score: ${r.finalScore.toString().padEnd(4)}/10 | Latency: ${r.durationSec}s`);
+    const skipLabel = r.llmJudgeSkipped ? " (Judge Skipped)" : "";
+    console.log(`${r.name.padEnd(42)} | Score: ${r.finalScore.toString().padEnd(4)}/10 | Latency: ${r.durationSec}s${skipLabel}`);
   });
 
   console.log(`\n🥇 RECOMMENDED PROMPT: ${best.name}`);
