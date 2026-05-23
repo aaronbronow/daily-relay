@@ -1,0 +1,261 @@
+tasks:
+  - week: 1
+    name: Insurance
+    taskDescription: Review & Update Insurance Policy, Home Warranty, Mortgage & Loan. Make a Recording. Car tabs. Take down Christmas Lights.
+    lastDayOfWeek: January 4, 2026
+    mindsetHoliday: New Year Reset
+  - week: 2
+    name: Oven
+    taskDescription: Clean Oven and Stove Top
+    lastDayOfWeek: January 11, 2026
+    mindsetHoliday: New Year Reset
+  - week: 3
+    name: Washing machine
+    taskDescription: Clean Washing Machine & Dryer Vents. Rugs and couches.
+    lastDayOfWeek: January 18, 2026
+    mindsetHoliday: New Year Reset
+  - week: 4
+    name: Dishwasher
+    taskDescription: Clean Garbage Disposal & Dishwasher. Replace Baking Soda in Fridge.
+    lastDayOfWeek: January 25, 2026
+    mindsetHoliday: New Year Reset
+  - week: 5
+    name: Smokey Ds
+    taskDescription: Test Smoke Alarm, Carbon Monoxide Alarm & Fire Extinguisher.
+    lastDayOfWeek: February 1, 2026
+    mindsetHoliday: Pentacles
+  - week: 6
+    name: Air filters
+    taskDescription: Replace HVAC Filter. Clean Air Purifier Filters.
+    lastDayOfWeek: February 8, 2026
+    mindsetHoliday: Pentacles
+  - week: 7
+    name: Shower heads
+    taskDescription: Clean and Remove Sediment from Shower Heads and Faucets.
+    lastDayOfWeek: February 15, 2026
+    mindsetHoliday: Pentacles
+  - week: 8
+    name: Mattresses
+    taskDescription: Rotate & Vacuum Mattress. Wash Pillows.
+    lastDayOfWeek: February 22, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 9
+    name: Refrigerator
+    taskDescription: Vacuum Refrigerator/Freezer Coils. Clean & Throwout Expired Food.
+    lastDayOfWeek: March 1, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 10
+    name: Drains & Taxes
+    taskDescription: Flush Drains(Boiling Water/Baking Soda/Vinegar). Clean Bathroom Fan. Taxes
+    lastDayOfWeek: March 8, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 11
+    name: Hoses
+    taskDescription: De-Winterize Outside Faucets. Re-attach garden hose. Check Sprinkler Heads.
+    lastDayOfWeek: March 15, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 12
+    name: Patio prep
+    taskDescription: Oil Lawnmower. Uncover Grill and Patio Furniture. Fertilize Lawn & Garden Prep. Power wash deck.
+    lastDayOfWeek: March 22, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 13
+    name: AC/Ducts
+    taskDescription: Uncover A/C Unit. Flush AC Condensate.   Have HVAC Professionally Serviced & Cleaned.
+    lastDayOfWeek: March 29, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 14
+    name: Crawlspace
+    taskDescription: Clean Window Wells. Hot tub water change.
+    lastDayOfWeek: April 5, 2026
+    mindsetHoliday: Lent (Mark Wahlberg 40 Day)
+  - week: 15
+    name: Trash cans
+    taskDescription: Sanitize Trash & Recycle Bin.
+    lastDayOfWeek: April 12, 2026
+    mindsetHoliday: Wands
+  - week: 16
+    name: Washing machine (2)
+    taskDescription: Clean Washing Machine & Dryer Vents. Rugs and couches.
+    lastDayOfWeek: April 19, 2026
+    mindsetHoliday: Wands
+  - week: 17
+    name: Chimney
+    taskDescription: Clean Floors and Walls. Inspect Chimney. Entry tile
+    lastDayOfWeek: April 26, 2026
+    mindsetHoliday: Wands
+  - week: 18
+    name: Air filters (2)
+    taskDescription: Replace HVAC Filter. Clean Air Purifier Filters.
+    lastDayOfWeek: May 3, 2026
+    mindsetHoliday: Wands
+  - week: 19
+    name: Mold
+    taskDescription: Check for Mold & Water Damage.
+    lastDayOfWeek: May 10, 2026
+    mindsetHoliday: Wands
+  - week: 20
+    name: Dishwasher (2)
+    taskDescription: Clean Garbage Disposal & Dishwasher. Replace Baking Soda in Fridge.
+    lastDayOfWeek: May 17, 2026
+    mindsetHoliday: Wands
+  - week: 21
+    name: Driveway
+    taskDescription: Caring for Blacktop/Concrete/Pavers, Trim Shrubs, Lawn Care.
+    lastDayOfWeek: May 24, 2026
+    mindsetHoliday: Wands
+  - week: 22
+    name: Windows
+    taskDescription: Wash Outside Porch, Windows & Siding.
+    lastDayOfWeek: May 31, 2026
+    mindsetHoliday: Wands
+  - week: 23
+    name: Roof
+    taskDescription: Inspect For Missing Roof Shingles. Spray roof
+    lastDayOfWeek: June 7, 2026
+    mindsetHoliday: Wands
+  - week: 24
+    name: Doors
+    taskDescription: Lubricate Garage Doors.
+    lastDayOfWeek: June 14, 2026
+    mindsetHoliday: Litha/Midsummer
+  - week: 25
+    name: Water heater
+    taskDescription: Drain Hot Water Heater & Flush Sediment. Soft Water Maintenance. Test Sump Pump.
+    lastDayOfWeek: June 21, 2026
+    mindsetHoliday: Litha/Midsummer
+  - week: 26
+    name: Tanks
+    taskDescription: Clean Toilet Bowl & Tank.
+    lastDayOfWeek: June 28, 2026
+    mindsetHoliday: Litha/Midsummer
+  - week: 27
+    name: Sinks and Tubs
+    taskDescription: Replace Caulking & Seal Tile Grout.
+    lastDayOfWeek: July 5, 2026
+    mindsetHoliday: Cups
+  - week: 28
+    name: Outlets
+    taskDescription: Test GFCI Outlets.
+    lastDayOfWeek: July 12, 2026
+    mindsetHoliday: Cups
+  - week: 29
+    name: Smokey Ds (2)
+    taskDescription: Test Smoke Alarm, Carbon Monoxide Alarm & Fire Extinguisher.
+    lastDayOfWeek: July 19, 2026
+    mindsetHoliday: Cups
+  - week: 30
+    name: Washing machine (3)
+    taskDescription: Clean Washing Machine & Dryer Vents. Rugs and couches.
+    lastDayOfWeek: July 26, 2026
+    mindsetHoliday: Cups
+  - week: 31
+    name: Air filters (3)
+    taskDescription: Replace HVAC Filter. Clean Air Purifier Filters.
+    lastDayOfWeek: August 2, 2026
+    mindsetHoliday: Cups
+  - week: 32
+    name: Dishwasher (3)
+    taskDescription: Clean Garbage Disposal & Dishwasher.
+    lastDayOfWeek: August 9, 2026
+    mindsetHoliday: Cups
+  - week: 33
+    name: Refrigerator (2)
+    taskDescription: Vacuum Refrigerator/Freezer Coils. Clean & Throwout Expired Food.
+    lastDayOfWeek: August 16, 2026
+    mindsetHoliday: Cups
+  - week: 34
+    name: Mattresses (2)
+    taskDescription: Rotate & Vacuum Mattress. Wash Pillows.
+    lastDayOfWeek: August 23, 2026
+    mindsetHoliday: Cups
+  - week: 35
+    name: Emergency Prep
+    taskDescription: 'Emergency Preparedness: Check flashlights & Batteries, Buy Extra Water Bottles, Refill First Aid Kits, Replace Batteries in Smoke/Carbon Monoxide Alarms.'
+    lastDayOfWeek: August 30, 2026
+    mindsetHoliday: Cups
+  - week: 36
+    name: Water pressure
+    taskDescription: Test Home Water Pressure.
+    lastDayOfWeek: September 6, 2026
+    mindsetHoliday: Cups
+  - week: 37
+    name: Clean grill (winter)
+    taskDescription: Clean BBQ Grill.
+    lastDayOfWeek: September 13, 2026
+    mindsetHoliday: Cups
+  - week: 38
+    name: Trash cans (2)
+    taskDescription: Sanitize Trash and Recycle Bin.
+    lastDayOfWeek: September 20, 2026
+    mindsetHoliday: Cups
+  - week: 39
+    name: Winterize AC
+    taskDescription: Winterize & Cover A/C Unit. Trim laurel hedges.
+    lastDayOfWeek: September 27, 2026
+    mindsetHoliday: Mabon/Moon Festival
+  - week: 40
+    name: Hoses (winter)
+    taskDescription: Winterize Outdoor Faucets & Sprinkler System. Detach Garden Hose. Hot tub water change
+    lastDayOfWeek: October 4, 2026
+    mindsetHoliday: Mabon/Moon Festival
+  - week: 41
+    name: Patio prep (winter)
+    taskDescription: Winterize Lawnmower & Patio Furniture. Oil Snowblower.
+    lastDayOfWeek: October 11, 2026
+    mindsetHoliday: Mabon/Moon Festival
+  - week: 42
+    name: Drains (2)
+    taskDescription: Flush Drains(Boiling Water/Baking Soda/Vinegar). Clean Bathroom Fan. Entry tile
+    lastDayOfWeek: October 18, 2026
+    mindsetHoliday: Mabon/Moon Festival
+  - week: 43
+    name: Doors (winter)
+    taskDescription: Check for Air Drafts. Replace Weather Stripping.
+    lastDayOfWeek: October 25, 2026
+    mindsetHoliday: Mabon/Moon Festival
+  - week: 44
+    name: Washing machine (4)
+    taskDescription: Clean Washing Machine & Dryer Vents. Rugs and couches.
+    lastDayOfWeek: November 1, 2026
+    mindsetHoliday: Swords
+  - week: 45
+    name: Gutters
+    taskDescription: Clean Gutters and Downspouts. Clean windows.
+    lastDayOfWeek: November 8, 2026
+    mindsetHoliday: Swords
+  - week: 46
+    name: Air filters (4)
+    taskDescription: Replace HVAC Filter. Clean Air Purifier Filters.
+    lastDayOfWeek: November 15, 2026
+    mindsetHoliday: Swords
+  - week: 47
+    name: Holiday baking begins
+    taskDescription: Holiday baking begins
+    lastDayOfWeek: November 22, 2026
+    mindsetHoliday: Swords
+  - week: 48
+    name: Dishwasher (4)
+    taskDescription: Clean Garbage Disposal & Dishwasher.
+    lastDayOfWeek: November 29, 2026
+    mindsetHoliday: Swords
+  - week: 49
+    name: Microwave & range
+    taskDescription: Clean Microwave Filter/Range Hood.
+    lastDayOfWeek: December 6, 2026
+    mindsetHoliday: Swords
+  - week: 50
+    name: Tanks (2)
+    taskDescription: Clean Toilet Bowl & Tank.
+    lastDayOfWeek: December 13, 2026
+    mindsetHoliday: Swords
+  - week: 51
+    name: Holiday prep
+    taskDescription: Prep for Holidays
+    lastDayOfWeek: December 20, 2026
+    mindsetHoliday: Swords
+  - week: 52
+    name: Holidays
+    taskDescription: Holidays
+    lastDayOfWeek: December 27, 2026
+    mindsetHoliday: Swords

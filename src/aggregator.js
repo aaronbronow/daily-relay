@@ -15,6 +15,7 @@ const { collect: rssCollector } = require('./collectors/rssCollector');
 const { collect: imapCollector } = require('./collectors/imapCollector');
 const { collect: githubCollector } = require('./collectors/githubCollector');
 const { collect: seasonCollector } = require('./collectors/seasonCollector');
+const { collect: homeHealthCollector } = require('./collectors/homeHealthCollector');
 const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
@@ -106,6 +107,7 @@ async function aggregate() {
         else if (source.type === 'history') result = await historyCollector(source);
         else if (source.type === 'tasks') result = await tasksCollector(source);
         else if (source.type === 'season') result = await seasonCollector(source);
+        else if (source.type === 'homehealth') result = await homeHealthCollector(source);
         else result = { site: source.name, items: [], error: 'Unknown collector type' };
       }
       
@@ -115,6 +117,7 @@ async function aggregate() {
         if (cachedData.history) allCached.push(cachedData.history);
         if (cachedData.tasks) allCached.push(cachedData.tasks);
         if (cachedData.season) allCached.push(cachedData.season);
+        if (cachedData.homeHealth) allCached.push(cachedData.homeHealth);
         
         const cachedSite = allCached.find(s => s.site === source.name);
         
@@ -150,6 +153,7 @@ async function aggregate() {
   const historyResult = newsResults.find(r => r.type === 'history');
   const tasksResult = newsResults.find(r => r.type === 'tasks');
   const seasonResult = newsResults.find(r => r.type === 'season');
+  const homeHealthResult = newsResults.find(r => r.type === 'homehealth');
 
   const data = {
     title: "Daily Briefing",
@@ -158,10 +162,11 @@ async function aggregate() {
     brief: "Fetching your overview...", 
     emailUpdates: newsResults.filter(r => r.type === 'imap'),
     githubUpdates: newsResults.filter(r => r.type === 'github'),
-    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'github' && r.type !== 'history' && r.type !== 'tasks' && r.type !== 'season'),
+    todaysNews: newsResults.filter(r => r.type !== 'imap' && r.type !== 'github' && r.type !== 'history' && r.type !== 'tasks' && r.type !== 'season' && r.type !== 'homehealth'),
     history: historyResult,
     tasks: tasksResult,
     season: seasonResult,
+    homeHealth: homeHealthResult,
     summaries: {}, // Map of siteName -> htmlSummary
     systemWarning: null
   };

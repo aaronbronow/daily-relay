@@ -475,37 +475,61 @@
                     <%- briefing.brief %>
                 </article>
             </section>
+            <div class="mindset-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Seasonal Mindset Archetype Card -->
+                <% if (briefing.season && briefing.season.current) { %>
+                    <% const curSeason = briefing.season.current; %>
+                    <section id="seasonal-mindset" style="margin-bottom: 0;">
+                        <div class="mindset-card" style="--mindset-accent-color: <%= curSeason.color %>; --mindset-accent-bg: <%= curSeason.color %>1a;">
+                            <div class="mindset-header">
+                                <div class="mindset-title-group">
+                                    <h3 class="mindset-name"><%= curSeason.name %></h3>
+                                    <span class="mindset-focus"><%= curSeason.focus %></span>
+                                </div>
+                                <span class="mindset-duration"><%= curSeason.startDateFormatted %> – <%= curSeason.endDateFormatted %></span>
+                            </div>
+                            <p class="mindset-archetype">“<%= curSeason.archetype %>”</p>
+                            <div class="mindset-progress-container">
+                                <div class="mindset-progress-bar" title="Season Progress: <%= curSeason.progressPercent %>%">
+                                    <div class="mindset-progress-fill" style="width: <%= curSeason.progressPercent %>%;"></div>
+                                </div>
+                                <span class="mindset-countdown">
+                                    <% if (curSeason.remainingDays === 0) { %>
+                                        Last day of the season
+                                    <% } else if (curSeason.remainingDays === 1) { %>
+                                        1 day remaining
+                                    <% } else { %>
+                                        <%= curSeason.remainingDays %> days remaining
+                                    <% } %>
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+                <% } %>
 
-            <!-- Seasonal Mindset Archetype Card -->
-            <% if (briefing.season && briefing.season.current) { %>
-                <% const curSeason = briefing.season.current; %>
-                <section id="seasonal-mindset">
-                    <div class="mindset-card" style="--mindset-accent-color: <%= curSeason.color %>; --mindset-accent-bg: <%= curSeason.color %>1a;">
-                        <div class="mindset-header">
-                            <div class="mindset-title-group">
-                                <h3 class="mindset-name"><%= curSeason.name %></h3>
-                                <span class="mindset-focus"><%= curSeason.focus %></span>
+                <!-- Home Health Weekly Checklist Card -->
+                <% if (briefing.homeHealth && briefing.homeHealth.current) { %>
+                    <% const curHome = briefing.homeHealth.current; %>
+                    <section id="home-health" style="margin-bottom: 0;">
+                        <div class="mindset-card" style="--mindset-accent-color: var(--h2-border); --mindset-accent-bg: var(--one-liner-bg);">
+                            <div class="mindset-header">
+                                <div class="mindset-title-group">
+                                    <h3 class="mindset-name">🏡 Home Health</h3>
+                                    <span class="mindset-focus">Week <%= curHome.week %> • <%= curHome.name %></span>
+                                </div>
+                                <span class="mindset-duration">Target: <%= curHome.targetDate %></span>
                             </div>
-                            <span class="mindset-duration"><%= curSeason.startDateFormatted %> – <%= curSeason.endDateFormatted %></span>
-                        </div>
-                        <p class="mindset-archetype">“<%= curSeason.archetype %>”</p>
-                        <div class="mindset-progress-container">
-                            <div class="mindset-progress-bar" title="Season Progress: <%= curSeason.progressPercent %>%">
-                                <div class="mindset-progress-fill" style="width: <%= curSeason.progressPercent %>%;"></div>
+                            <p class="mindset-archetype" style="font-style: normal; margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.45; font-weight: 500;">
+                                <%= curHome.taskDescription %>
+                            </p>
+                            <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed var(--hr-border); font-size: 0.75rem; color: var(--mindset-meta-color); display: flex; justify-content: space-between; align-items: center;">
+                                <span>Mindset Alignment: <strong><%= curHome.mindsetHoliday %></strong></span>
+                                <span style="background: var(--h2-border); color: #ffffff; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem;">Active</span>
                             </div>
-                            <span class="mindset-countdown">
-                                <% if (curSeason.remainingDays === 0) { %>
-                                    Last day of the season
-                                <% } else if (curSeason.remainingDays === 1) { %>
-                                    1 day remaining
-                                <% } else { %>
-                                    <%= curSeason.remainingDays %> days remaining
-                                <% } %>
-                            </span>
                         </div>
-                    </div>
-                </section>
-            <% } %>
+                    </section>
+                <% } %>
+            </div>
         </div>
 
         <!-- Email Updates Section -->
