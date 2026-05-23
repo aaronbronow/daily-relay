@@ -7,6 +7,7 @@ services:
     image: daily-relay-app
     env_file: .env
     volumes:
+      - ./config:/app/config
       - ./data:/app/data
       - ./public:/app/public
       - ./src:/app/src

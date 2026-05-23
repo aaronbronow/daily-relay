@@ -118,7 +118,7 @@ async function aggregate() {
         
         const cachedSite = allCached.find(s => s.site === source.name);
         
-        if (cachedSite && (cachedSite.items || cachedSite.rawData)) {
+        if (cachedSite && (cachedSite.items || cachedSite.rawData || cachedSite.current)) {
           if (isOnly || isSkip) {
             console.log(`[Aggregator] Loaded skipped source ${source.name} from cache.`);
           } else {
@@ -127,6 +127,7 @@ async function aggregate() {
           }
           if (cachedSite.items) result.items = cachedSite.items;
           if (cachedSite.rawData) result.rawData = cachedSite.rawData;
+          if (cachedSite.current) result.current = cachedSite.current;
           result._reused = true;
         }
       }
