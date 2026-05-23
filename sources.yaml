@@ -163,3 +163,5 @@ sources:
       - "rails/rails"
       - "pi-hole/pi-hole"
       - "nodejs/node"
+  - name: "Seasonal Mindset"
+    type: "season"

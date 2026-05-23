@@ -1,0 +1,61 @@
+seasons:
+  - name: "New Year Reset"
+    type: "fixed"
+    start_month: 1
+    start_day: 1
+    end_month: 1
+    end_day: 31
+    focus: "Refresh"
+    color: "#10b981"
+    archetype: "A period of clean slates, resolution, and personal alignment. Focus on establishing routines, clearing clutter, and setting intentional directions for the upcoming cycle."
+  - name: "Pentacles"
+    type: "dynamic"
+    focus: "Career, possessions, materials"
+    color: "#f59e0b"
+    archetype: "Grounded focus on work, resource accumulation, physical well-being, and material security. Anchor your efforts in tangible results, career growth, and building lasting value."
+  - name: "Lent aka Mark Wahlberg's 40 Day Challenge"
+    type: "dynamic"
+    focus: "Integrity, anticipation"
+    color: "#8b5cf6"
+    archetype: "A season of discipline, self-examination, and spiritual sharpening. Embrace voluntary discomfort, shed unhelpful habits, and build integrity through mindful moderation."
+  - name: "Wands"
+    type: "dynamic"
+    focus: "Will, creativity"
+    color: "#ef4444"
+    archetype: "Sparks of creative energy, bold action, and passionate pursuits. Channel your inner fire to initiate new projects, express yourself boldly, and drive change with determination."
+  - name: "Litha/Midsummer"
+    type: "fixed"
+    start_month: 6
+    start_day: 10
+    end_month: 7
+    end_day: 3
+    focus: "Courage, fertility"
+    color: "#eab308"
+    archetype: "Celebrating the peak of light and abundance. Reconnect with high energy, confidence, warmth, and the outward manifestation of projects and growth."
+  - name: "Cups"
+    type: "fixed"
+    start_month: 7
+    start_day: 4
+    end_month: 9
+    end_day: 22
+    focus: "Spirituality, emotions, love"
+    color: "#06b6d4"
+    archetype: "Deepening emotional intelligence, intuition, and spiritual alignment. Prioritize relationship building, active listening, healing, and listening to the whispers of the heart."
+  - name: "Mabon/Moon Festival"
+    type: "fixed"
+    start_month: 9
+    start_day: 23
+    end_month: 10
+    end_day: 31
+    focus: "Son of Earth Mother"
+    color: "#f97316"
+    archetype: "Harvesting the fruits of your labor and preparing for quiet reflection. Express deep gratitude, celebrate community, and achieve balance between light and dark."
+  - name: "Swords"
+    type: "fixed"
+    start_month: 11
+    start_day: 1
+    end_month: 12
+    end_day: 31
+    focus: "Reason, logic, wisdom, intellect"
+    color: "#3b82f6"
+    archetype: "Sharpening critical thinking, communication, and decisive judgment. Cut through illusions, organize complex thoughts, and reflect with clarity as the year winds down."

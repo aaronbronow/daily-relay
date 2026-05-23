@@ -40,6 +40,10 @@
             --footer-text: #777777;
             --menu-bg: #ffffff;
             --menu-shadow: rgba(0,0,0,0.15);
+            --season-card-bg: rgba(0, 0, 0, 0.02);
+            --season-card-border: rgba(0, 0, 0, 0.08);
+            --season-bar-bg: rgba(0, 0, 0, 0.06);
+            --season-meta-color: #555555;
         }
 
         [data-theme="dark"] {
@@ -65,6 +69,10 @@
             --footer-text: #999999;
             --menu-bg: #2d2d2d;
             --menu-shadow: rgba(0,0,0,0.5);
+            --season-card-bg: rgba(255, 255, 255, 0.03);
+            --season-card-border: rgba(255, 255, 255, 0.08);
+            --season-bar-bg: rgba(255, 255, 255, 0.1);
+            --season-meta-color: #aaaaaa;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -91,6 +99,10 @@
                 --footer-text: #999999;
                 --menu-bg: #2d2d2d;
                 --menu-shadow: rgba(0,0,0,0.5);
+                --season-card-bg: rgba(255, 255, 255, 0.03);
+                --season-card-border: rgba(255, 255, 255, 0.08);
+                --season-bar-bg: rgba(255, 255, 255, 0.1);
+                --season-meta-color: #aaaaaa;
             }
         }
 
@@ -281,6 +293,88 @@
             font-size: 0.8rem;
             color: var(--footer-text);
         }
+
+        /* Season Archetype Card Styling */
+        .season-card {
+            background: var(--season-card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--season-card-border);
+            border-left: 6px solid var(--season-accent-color, #007bff);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+        .season-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .season-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .season-name {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--h2-color);
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        .season-focus {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--season-accent-bg, rgba(0, 123, 255, 0.1));
+            color: var(--season-accent-color, #007bff);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .season-duration {
+            font-size: 0.8rem;
+            color: var(--season-meta-color);
+            font-weight: 500;
+        }
+        .season-archetype {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            font-style: italic;
+        }
+        .season-progress-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--season-meta-color);
+        }
+        .season-progress-bar {
+            flex-grow: 1;
+            height: 8px;
+            background: var(--season-bar-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .season-progress-fill {
+            height: 100%;
+            background: var(--season-accent-color, #007bff);
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .season-countdown {
+            font-weight: 700;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -300,6 +394,37 @@
             <div class="warning-banner" role="alert">
                 <%= briefing.systemWarning %>
             </div>
+        <% } %>
+
+        <!-- Seasonal Mindset Archetype Card -->
+        <% if (briefing.season && briefing.season.current) { %>
+            <% const curSeason = briefing.season.current; %>
+            <section id="seasonal-mindset">
+                <div class="season-card" style="--season-accent-color: <%= curSeason.color %>; --season-accent-bg: <%= curSeason.color %>1a;">
+                    <div class="season-header">
+                        <div class="season-title-group">
+                            <h3 class="season-name"><%= curSeason.name %></h3>
+                            <span class="season-focus"><%= curSeason.focus %></span>
+                        </div>
+                        <span class="season-duration"><%= curSeason.startDateFormatted %> – <%= curSeason.endDateFormatted %></span>
+                    </div>
+                    <p class="season-archetype">“<%= curSeason.archetype %>”</p>
+                    <div class="season-progress-container">
+                        <div class="season-progress-bar" title="Season Progress: <%= curSeason.progressPercent %>%">
+                            <div class="season-progress-fill" style="width: <%= curSeason.progressPercent %>%;"></div>
+                        </div>
+                        <span class="season-countdown">
+                            <% if (curSeason.remainingDays === 0) { %>
+                                Last day of the season
+                            <% } else if (curSeason.remainingDays === 1) { %>
+                                1 day remaining
+                            <% } else { %>
+                                <%= curSeason.remainingDays %> days remaining
+                            <% } %>
+                        </span>
+                    </div>
+                </div>
+            </section>
         <% } %>
 
         <!-- Intro / Status Brief -->
