@@ -16,6 +16,7 @@ const { collect: imapCollector } = require('./collectors/imapCollector');
 const { collect: githubCollector } = require('./collectors/githubCollector');
 const { collect: seasonCollector } = require('./collectors/seasonCollector');
 const { collect: homeHealthCollector } = require('./collectors/homeHealthCollector');
+const { collect: windowsInsiderCollector } = require('./collectors/windowsInsiderCollector');
 const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
@@ -104,6 +105,7 @@ async function aggregate() {
         else if (source.type === 'rss') result = await rssCollector(source);
         else if (source.type === 'imap') result = await imapCollector(source);
         else if (source.type === 'github') result = await githubCollector(source);
+        else if (source.type === 'windowsinsider') result = await windowsInsiderCollector(source);
         else if (source.type === 'history') result = await historyCollector(source);
         else if (source.type === 'tasks') result = await tasksCollector(source);
         else if (source.type === 'season') result = await seasonCollector(source);

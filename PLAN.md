@@ -22,6 +22,7 @@
 - `src/collectors/historyCollector.js`: Wikimedia API client with interest-based LLM filtering (Complete).
 - `src/collectors/tasksCollector.js`: Google Tasks API client with multi-list support and timezone-aware grouping (Complete).
 - `src/collectors/githubCollector.js`: GitHub Releases aggregator for high-signal repo updates (Complete).
+- `src/collectors/windowsInsiderCollector.js`: Filtered RSS collector for Beta builds (Complete).
 
 ### Stage 2: The Collator (Processing)
 - **Aggregator:** Orchestrates sequential collector execution and manages resilient fallbacks (Complete).
@@ -77,6 +78,7 @@
 - [x] **Briefing Intro**: Seasonal Mindset card added to the top-right of the briefing grid with archetype quote, progress bar, and status chip.
 - [x] **GitHub Releases**: Aggregator for software updates via public RSS/Atom feeds (Complete).
 - [x] **Home Health Checklist**: Weekly home maintenance collector from `data/homeChecklist.yaml` with week progress bar, next-week preview, and status chip UI.
+- [x] **Windows Insider**: Implement `windowsInsiderCollector.js` with Beta-specific RSS filtering (Complete).
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
 - [ ] **Log Tailer**: Implement `logCollector.js` to extract status from Unraid job output files.

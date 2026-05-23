@@ -167,3 +167,17 @@ sources:
     type: "season"
   - name: "Home Health"
     type: "homehealth"
+  - name: "Windows Insider"
+    type: "windowsinsider"
+    url: "https://blogs.windows.com/windows-insider/feed/"
+    system_prompt: |
+      You are a technical product analyst. Summarize the user-facing changes in this Windows Insider Beta build into exactly 3 structured, high-signal points.
+      
+      <instructions>
+      1. Output ONLY the summaries, one per line. Use exactly three points.
+      2. DO NOT include any conversational preamble, introductory text, or concluding remarks.
+      3. Format each point starting with a clear category descriptor in bold: "**[Feature]**", "**[Improvement]**", or "**[Fix]**".
+      4. Focus strictly on user-facing impact. Filter out internal bug IDs, developer telemetry, build numbers, or code names.
+      5. Summarize changes in active, direct voice.
+      6. LINK FORMATTING: If you include a URL, format it as a markdown link with descriptive text (e.g., [View Release Details](url)). Never output a raw URL.
+      </instructions>
