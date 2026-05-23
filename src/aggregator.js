@@ -118,7 +118,7 @@ async function aggregate() {
         
         const cachedSite = allCached.find(s => s.site === source.name);
         
-        if (cachedSite && (cachedSite.items || cachedSite.rawData || cachedSite.current)) {
+        if (cachedSite && (cachedSite.items || cachedSite.rawData || cachedSite.current || cachedSite._tasks)) {
           if (isOnly || isSkip) {
             console.log(`[Aggregator] Loaded skipped source ${source.name} from cache.`);
           } else {
@@ -128,6 +128,7 @@ async function aggregate() {
           if (cachedSite.items) result.items = cachedSite.items;
           if (cachedSite.rawData) result.rawData = cachedSite.rawData;
           if (cachedSite.current) result.current = cachedSite.current;
+          if (cachedSite._tasks) result._tasks = cachedSite._tasks;
           result._reused = true;
         }
       }
@@ -283,7 +284,7 @@ async function aggregate() {
             const count = pastDueAndToday.length;
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
-            const listItems = pastDueAndToday.map(t => `- [ ] ${getTaskDisplay(t)}`).join("\n");
+            const listItems = pastDueAndToday.map(t => `- ${getTaskDisplay(t)}`).join("\n");
             parts.push(`There ${verb} ${count} ${noun} for today:\n${listItems}`);
           } else if (completedToday.length > 0) {
             parts.push("All tasks for today are completed!");
@@ -293,7 +294,7 @@ async function aggregate() {
             const count = futureTasks.length;
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
-            const listItems = futureTasks.map(t => `- [ ] ${getTaskDisplay(t)}`).join("\n");
+            const listItems = futureTasks.map(t => `- ${getTaskDisplay(t)}`).join("\n");
             parts.push(`There ${verb} ${count} other ${noun} this week:\n${listItems}`);
           }
           tasksPart = parts.join("\n\n");
