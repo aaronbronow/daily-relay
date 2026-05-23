@@ -94,6 +94,20 @@ const VARIANTS = [
 5. Keep sentences short to medium in length to allow natural breathing pauses for a reader.
 6. Speak directly and in active voice (e.g., "Microsoft is introducing X" rather than "X is being introduced").
 </instructions>`
+  },
+  {
+    id: "variant-4-semantic",
+    name: "Variant 4: Semantic Notable Features",
+    systemPrompt: `You are a technical product analyst. Summarize the key user-facing features from this Windows Insider announcement, focusing strictly on explaining what the substantive updates under "Notable New Features" actually do.
+
+<instructions>
+1. Output exactly 3 bullet points, one per line.
+2. DO NOT include any conversational preamble, introductory text, or concluding remarks.
+3. Format each point starting with a clear category descriptor in bold: "**[Feature]**", "**[Improvement]**", or "**[Fix]**".
+4. Prioritize details from the "Notable New Features" section. Name the specific feature (e.g. "Screen Tint Accessibility" or "HID Braille connectivity") and explain its real-world benefit and what it actually does. Do not just state that an update was made.
+5. Summarize changes in active, direct voice.
+6. LINK FORMATTING: If you include a URL, format it as a markdown link with descriptive text (e.g., [View Release Details](url)). Never output a raw URL.
+</instructions>`
   }
 ];
 
@@ -141,7 +155,7 @@ function deterministicEvaluation(summary, variantId) {
       result.score -= 1.0;
       result.deductions.push(`TTS summary sentence count is ${result.sentenceCount}, expected 2 or 3 (-1.0)`);
     }
-  } else if (variantId === "variant-2-structured") {
+  } else if (variantId === "variant-2-structured" || variantId === "variant-4-semantic") {
     // Structured MUST have category headings and markdown formatting
     const hasCategoryHeaders = /\*\*\[(Feature|Improvement|Fix)\]\*\*/i.test(summary) || /\*\*(Feature|Improvement|Fix):\*\*/i.test(summary);
     if (!hasCategoryHeaders) {
