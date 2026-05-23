@@ -75,11 +75,24 @@ async function collect(config) {
 
             const targetUids = uids.slice(0, LIMIT);
             console.log(`[imapCollector] (${SITE_NAME}) Fetching ${targetUids.length} messages...`);
-            const f = imap.fetch(targetUids, { bodies: '' });
+            
+            const fetchOptions = { bodies: '' };
+            if (imap.serverSupports('X-GM-EXT-1')) {
+              fetchOptions.modifiers = { 'X-GM-THRID': true };
+            }
+            const f = imap.fetch(targetUids, fetchOptions);
 
             let fetchedCount = 0;
             f.on('message', (msg) => {
               const p = new Promise((resolveMsg) => {
+                let threadId = null;
+
+                msg.on('attributes', (attrs) => {
+                  if (attrs && attrs['x-gm-thrid']) {
+                    threadId = attrs['x-gm-thrid'];
+                  }
+                });
+
                 msg.on('body', (stream) => {
                   simpleParser(stream).then(parsed => {
                     fetchedCount++;
@@ -115,12 +128,22 @@ async function collect(config) {
                     }
                     snippet = snippet.replace(/\s+/g, ' ').trim().substring(0, 1000);
 
+                    let gmailUrl = '';
+                    if (threadId) {
+                      try {
+                        const threadIdHex = BigInt(threadId).toString(16);
+                        gmailUrl = `https://mail.google.com/mail/u/0/#all/${threadIdHex}`;
+                      } catch (e) {
+                        console.warn(`[imapCollector] Failed to convert threadId ${threadId} to hex:`, e.message);
+                      }
+                    }
+
                     items.push({
                       title: subject,
                       from: from,
                       fromAddress: fromAddress,
                       description: snippet,
-                      url: '',
+                      url: gmailUrl,
                       timestamp: date.toISOString(),
                       metrics: {
                         headings: headingCount,

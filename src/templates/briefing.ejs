@@ -166,6 +166,7 @@
             border: 1px solid var(--stream-border);
         }
         .rss-row {
+            position: relative;
             padding: 0.4rem 1.2rem 0.4rem 3.5rem; /* Base left margin (1.2rem) + Hanging indent (2.3rem) */
             border-bottom: 1px solid var(--header-border);
             font-size: 0.85rem;
@@ -178,6 +179,41 @@
         }
         .rss-row:last-child {
             border-bottom: none;
+        }
+        .item-ext-link {
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 3px 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            background: color-mix(in srgb, var(--link-color) 12%, var(--stream-bg));
+            color: var(--link-color);
+            border: 1px solid color-mix(in srgb, var(--link-color) 25%, transparent);
+            border-top: none;
+            border-right: none;
+            border-radius: 0 0 0 6px;
+            text-decoration: none;
+            opacity: 0.45;
+            transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        .rss-row:hover .item-ext-link {
+            opacity: 1;
+        }
+        .item-ext-link:hover {
+            background: color-mix(in srgb, var(--link-color) 22%, var(--stream-bg));
+            text-decoration: none;
+        }
+        .item-ext-link svg {
+            flex-shrink: 0;
         }
         .item-metadata {
             float: left;
@@ -560,6 +596,15 @@
                         <div class="stream-container">
                             <% summaryData.items.forEach(item => { %>
                                 <div class="rss-row">
+                                    <% 
+                                      const origItem = siteData.items ? siteData.items.find(x => x.title === item.title) : null;
+                                      const targetUrl = item.url || (origItem ? origItem.url : '');
+                                    %>
+                                    <% if (targetUrl) { %>
+                                        <a class="item-ext-link" href="<%= targetUrl %>" target="_blank" rel="noopener noreferrer" title="<%= item.title %>">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        </a>
+                                    <% } %>
                                     <div class="item-metadata" title="<%= item.preamble %>">
                                         <span class="meta-source"><%= item.metaSource %></span>
                                         <span class="meta-date">• <%= item.metaDate %></span>
@@ -586,6 +631,15 @@
                         <div class="stream-container">
                             <% summaryData.items.forEach(item => { %>
                                 <div class="rss-row">
+                                    <% 
+                                      const origItem = siteData.items ? siteData.items.find(x => x.title === item.title) : null;
+                                      const targetUrl = item.url || (origItem ? origItem.url : '');
+                                    %>
+                                    <% if (targetUrl) { %>
+                                        <a class="item-ext-link" href="<%= targetUrl %>" target="_blank" rel="noopener noreferrer" title="<%= item.title %>">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        </a>
+                                    <% } %>
                                     <div class="item-metadata" title="<%= item.preamble %>">
                                         <span class="meta-source"><%= item.metaSource %></span>
                                         <span class="meta-date">• <%= item.metaDate %></span>
@@ -612,6 +666,15 @@
                         <div class="stream-container">
                             <% summaryData.items.forEach(item => { %>
                                 <div class="rss-row">
+                                    <% 
+                                      const origItem = siteData.items ? siteData.items.find(x => x.title === item.title) : null;
+                                      const targetUrl = item.url || (origItem ? origItem.url : '');
+                                    %>
+                                    <% if (targetUrl) { %>
+                                        <a class="item-ext-link" href="<%= targetUrl %>" target="_blank" rel="noopener noreferrer" title="<%= item.title %>">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        </a>
+                                    <% } %>
                                     <div class="item-metadata" title="<%= item.preamble %>">
                                         <span class="meta-source"><%= item.metaSource %></span>
                                         <span class="meta-date">• <%= item.metaDate %></span>

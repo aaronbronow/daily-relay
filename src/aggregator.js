@@ -473,7 +473,8 @@ Summary:`;
                 mode, 
                 from: item.from, 
                 title: item.title, 
-                timestamp: item.timestamp 
+                timestamp: item.timestamp,
+                url: item.url
               };
 
             }
