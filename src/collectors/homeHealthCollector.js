@@ -26,13 +26,24 @@ async function collect(config) {
     // Project current system date onto the 2026 calendar baseline
     const currentYearDate = new Date(2026, now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
-    // Find the first week ending on or after the projected date
-    const activeTask = tasks.find(t => {
+    // Find the index of the first week ending on or after the projected date
+    const activeIndex = tasks.findIndex(t => {
       const taskDate = new Date(t.lastDayOfWeek);
       return taskDate >= currentYearDate;
     });
 
-    const selected = activeTask || tasks[tasks.length - 1];
+    const selectedIndex = activeIndex !== -1 ? activeIndex : tasks.length - 1;
+    const selected = tasks[selectedIndex];
+
+    // Resolve next week's task (wrap around at the end of the year)
+    const nextIndex = (selectedIndex + 1) % tasks.length;
+    const nextTask = tasks[nextIndex];
+
+    // Calculate week progress: day-of-week from Monday (0) to Sunday (6)
+    const dow = now.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+    const daysSinceMonday = (dow + 6) % 7; // Mon=0 ... Sun=6
+    const weekDaysRemaining = 6 - daysSinceMonday;
+    const weekProgressPercent = Math.round((daysSinceMonday / 6) * 100);
 
     return {
       site: SITE_NAME,
@@ -41,7 +52,16 @@ async function collect(config) {
         name: selected.name,
         taskDescription: selected.taskDescription,
         targetDate: selected.lastDayOfWeek,
-        mindsetHoliday: selected.mindsetHoliday
+        mindsetHoliday: selected.mindsetHoliday,
+        weekProgressPercent,
+        weekDaysRemaining
+      },
+      next: {
+        week: nextTask.week,
+        name: nextTask.name,
+        taskDescription: nextTask.taskDescription,
+        targetDate: nextTask.lastDayOfWeek,
+        mindsetHoliday: nextTask.mindsetHoliday
       }
     };
 

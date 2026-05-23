@@ -314,6 +314,7 @@
 
         /* Mindset Archetype Card Styling */
         .mindset-card {
+            position: relative;
             background: var(--mindset-card-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -321,6 +322,7 @@
             border-left: 6px solid var(--mindset-accent-color, #007bff);
             border-radius: 8px;
             padding: 1.5rem;
+            padding-top: 2.4rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
         }
         .mindset-header {
@@ -345,14 +347,20 @@
             padding: 0;
         }
         .mindset-focus {
-            font-size: 0.72rem;
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: var(--mindset-accent-bg, rgba(0, 123, 255, 0.1));
+            letter-spacing: 0.07em;
+            background: color-mix(in srgb, var(--mindset-accent-color, #007bff) 18%, var(--mindset-card-bg, #fff));
             color: var(--mindset-accent-color, #007bff);
-            padding: 2px 8px;
-            border-radius: 4px;
+            border: 1px solid color-mix(in srgb, var(--mindset-accent-color, #007bff) 35%, transparent);
+            border-top: none;
+            padding: 3px 10px;
+            border-radius: 0 8px 0 6px;
+            white-space: nowrap;
         }
         .mindset-duration {
             font-size: 0.78rem;
@@ -481,10 +489,10 @@
                     <% const curSeason = briefing.season.current; %>
                     <section id="seasonal-mindset" style="margin-bottom: 0;">
                         <div class="mindset-card" style="--mindset-accent-color: <%= curSeason.color %>; --mindset-accent-bg: <%= curSeason.color %>1a;">
+                            <span class="mindset-focus"><%= curSeason.focus %></span>
                             <div class="mindset-header">
                                 <div class="mindset-title-group">
                                     <h3 class="mindset-name"><%= curSeason.name %></h3>
-                                    <span class="mindset-focus"><%= curSeason.focus %></span>
                                 </div>
                                 <span class="mindset-duration"><%= curSeason.startDateFormatted %> – <%= curSeason.endDateFormatted %></span>
                             </div>
@@ -512,19 +520,28 @@
                     <% const curHome = briefing.homeHealth.current; %>
                     <section id="home-health" style="margin-bottom: 0;">
                         <div class="mindset-card" style="--mindset-accent-color: var(--h2-border); --mindset-accent-bg: var(--one-liner-bg);">
+                            <span class="mindset-focus" title="Target: <%= curHome.targetDate %>" style="cursor: default;">W<%= curHome.week %> • <%= curHome.name %></span>
                             <div class="mindset-header">
                                 <div class="mindset-title-group">
-                                    <h3 class="mindset-name">🏡 Home Health</h3>
-                                    <span class="mindset-focus">Week <%= curHome.week %> • <%= curHome.name %></span>
+                                    <h3 class="mindset-name">Home Health</h3>
                                 </div>
-                                <span class="mindset-duration">Target: <%= curHome.targetDate %></span>
                             </div>
                             <p class="mindset-archetype" style="font-style: normal; margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.45; font-weight: 500;">
                                 <%= curHome.taskDescription %>
                             </p>
-                            <div style="margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed var(--hr-border); font-size: 0.75rem; color: var(--mindset-meta-color); display: flex; justify-content: space-between; align-items: center;">
-                                <span>Mindset Alignment: <strong><%= curHome.mindsetHoliday %></strong></span>
-                                <span style="background: var(--h2-border); color: #ffffff; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem;">Active</span>
+                            <div style="margin-top: 0.8rem; font-size: 0.72rem; color: var(--mindset-meta-color); display: flex; justify-content: flex-start; align-items: center;">
+                                <% if (briefing.homeHealth.next) { %>
+                                    <% const nextHome = briefing.homeHealth.next; %>
+                                    <span>Next: <strong style="color: var(--text-color);"><%= nextHome.name %></strong> (W<%= nextHome.week %>)</span>
+                                <% } else { %>
+                                    <span style="background: var(--h2-border); color: #ffffff; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 0.7rem;">Active</span>
+                                <% } %>
+                            </div>
+                            <div class="mindset-progress-container" style="margin-top: 0.5rem;" title="Week Progress: <%= curHome.weekProgressPercent %>%">
+                                <div class="mindset-progress-bar">
+                                    <div class="mindset-progress-fill" style="width: <%= curHome.weekProgressPercent %>%;"></div>
+                                </div>
+                                <span class="mindset-countdown"><%= curHome.weekDaysRemaining %> <%= curHome.weekDaysRemaining === 1 ? 'day' : 'days' %> remaining</span>
                             </div>
                         </div>
                     </section>
