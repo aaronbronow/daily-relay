@@ -70,12 +70,13 @@
 - [x] **Markdown Link Enforcement**: Implement global prompt rules to force Markdown formatting for URLs and parse them in the UI for TTS optimization (Complete).
 
 ### Phase 5: Seasonal Context & Curated History (Complete)
-- [ ] **Static Season Logic**: Create `config/seasons.yaml` defining recurring holidays and weekly themes.
-- [ ] **Season Collector**: Build `seasonCollector.js` to calculate current week/theme without external APIs.
+- [x] **Static Season Logic**: Created `config/seasons.yaml` defining the 8 archetypal seasons with dynamic Easter/Lent/Wands boundaries.
+- [x] **Season Collector**: Built `seasonCollector.js` using Meeus/Jones/Butcher algorithm for exact seasonal date math, including progress % and remaining days.
 - [x] **Curated History**: Exhaustive Wikimedia fetcher with code-level interest filtering and dynamic source links.
 - [x] **Google Tasks**: Multi-list fetcher with code-based natural language briefing and task completion tracking.
-- [ ] **Briefing Intro**: Update `briefing.ejs` to lead with the Seasonal Theme to anchor the day's mindset.
+- [x] **Briefing Intro**: Seasonal Mindset card added to the top-right of the briefing grid with archetype quote, progress bar, and status chip.
 - [x] **GitHub Releases**: Aggregator for software updates via public RSS/Atom feeds (Complete).
+- [x] **Home Health Checklist**: Weekly home maintenance collector from `data/homeChecklist.yaml` with week progress bar, next-week preview, and status chip UI.
 
 ### Phase 6: System Infrastructure (Logs & MOTD)
 - [ ] **Log Tailer**: Implement `logCollector.js` to extract status from Unraid job output files.
