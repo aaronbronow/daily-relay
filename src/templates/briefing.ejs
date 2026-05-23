@@ -394,6 +394,29 @@
                 gap: 1.5rem;
             }
         }
+
+        /* Custom Task List Markdown styling inside status */
+        #status ul {
+            list-style: none;
+            padding-left: 0.2rem;
+            margin-top: 0.6rem;
+            margin-bottom: 0.6rem;
+        }
+        #status li:has(input[type="checkbox"]) {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.88rem;
+            line-height: 1.3;
+        }
+        #status li:has(input[type="checkbox"]) input[type="checkbox"] {
+            margin: 0;
+            accent-color: var(--h2-border);
+            cursor: not-allowed;
+            width: 15px;
+            height: 15px;
+        }
     </style>
 </head>
 <body>

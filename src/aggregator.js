@@ -265,21 +265,12 @@ async function aggregate() {
           return new Date(t.due) > endOfToday;
         });
 
-        const formatTaskList = (list) => {
-          if (list.length === 0) return "";
-          
-          const getTaskDisplay = (t) => {
-            if (!t.due || t.due.endsWith('T00:00:00.000Z')) {
-              return t.title;
-            }
-            const timePart = new Date(t.due).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-            return `${t.title} at ${timePart}`;
-          };
-
-          if (list.length === 1) return getTaskDisplay(list[0]);
-          if (list.length === 2) return `${getTaskDisplay(list[0])} and ${getTaskDisplay(list[1])}`;
-          const allButLast = list.slice(0, -1).map(t => getTaskDisplay(t)).join(", ");
-          return `${allButLast}, and ${getTaskDisplay(list[list.length - 1])}`;
+        const getTaskDisplay = (t) => {
+          if (!t.due || t.due.endsWith('T00:00:00.000Z')) {
+            return t.title;
+          }
+          const timePart = new Date(t.due).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+          return `${t.title} at ${timePart}`;
         };
 
         if (pendingTasks.length === 0 && completedToday.length > 0) {
@@ -292,7 +283,8 @@ async function aggregate() {
             const count = pastDueAndToday.length;
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
-            parts.push(`There ${verb} ${count} ${noun} for today: ${formatTaskList(pastDueAndToday)}.`);
+            const listItems = pastDueAndToday.map(t => `- [ ] ${getTaskDisplay(t)}`).join("\n");
+            parts.push(`There ${verb} ${count} ${noun} for today:\n${listItems}`);
           } else if (completedToday.length > 0) {
             parts.push("All tasks for today are completed!");
           }
@@ -301,9 +293,10 @@ async function aggregate() {
             const count = futureTasks.length;
             const verb = count === 1 ? "is" : "are";
             const noun = count === 1 ? "task" : "tasks";
-            parts.push(`There ${verb} ${count} other ${noun} this week: ${formatTaskList(futureTasks)}.`);
+            const listItems = futureTasks.map(t => `- [ ] ${getTaskDisplay(t)}`).join("\n");
+            parts.push(`There ${verb} ${count} other ${noun} this week:\n${listItems}`);
           }
-          tasksPart = parts.join(" ");
+          tasksPart = parts.join("\n\n");
         }
       }
 
