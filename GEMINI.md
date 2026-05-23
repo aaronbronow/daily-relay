@@ -13,7 +13,7 @@
 - **Publisher:** Express.js server on port 3000.
 - **Scheduling:** Alpine OS-level `crontab` triggers collection/aggregation hourly.
 - **Auto-Refresh:** Uses Server-Sent Events (SSE) to notify the browser when `public/index.html` is updated.
-- **Source Control:** NEVER stage or commit changes unless specifically requested by the user.
+- **Source Control:** Managed programmatically by the Test/Commit agent inside `.agents/` using surgical staging, conventional commits, and strict local validation rules before committing.
 
 ## Architectural Patterns
 - **CLI-First Aggregator:** `src/aggregator.js` is designed to be run as a standalone CLI script (via `npm run aggregate`) and triggered by cron.
