@@ -509,7 +509,13 @@
 
     <main>
         <!-- System Warnings -->
-        <% if (briefing.systemWarning) { %>
+        <% if (typeof briefing.systemWarnings !== 'undefined' && Array.isArray(briefing.systemWarnings) && briefing.systemWarnings.length > 0) { %>
+            <% briefing.systemWarnings.forEach(function(warn) { %>
+                <div class="warning-banner" role="alert">
+                    <%= warn %>
+                </div>
+            <% }); %>
+        <% } else if (briefing.systemWarning) { %>
             <div class="warning-banner" role="alert">
                 <%= briefing.systemWarning %>
             </div>

@@ -15,6 +15,10 @@ services:
       - ./sources.yaml:/app/sources.yaml
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
+      - ./package.json:/app/package.json.host:ro
+      - ./package-lock.json:/app/package-lock.json.host:ro
+      - ./Dockerfile:/app/Dockerfile.host:ro
+      - ./entrypoint.sh:/app/entrypoint.sh.host:ro
       # This anonymous volume ensures container-built modules aren't overwritten by host files
       - /app/node_modules
     restart: always

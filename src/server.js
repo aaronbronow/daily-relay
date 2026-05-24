@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { checkDockerSync } = require('./utils/dockerCheck');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +52,14 @@ if (fs.existsSync(WATCH_FILE)) {
     });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`[Server] daily-relay running at http://localhost:${PORT}`);
+    try {
+        const warnings = await checkDockerSync();
+        for (const warning of warnings) {
+            console.warn(`[Server Warning] ${warning}`);
+        }
+    } catch (err) {
+        // Gracefully ignore
+    }
 });

@@ -19,6 +19,7 @@ const { collect: homeHealthCollector } = require('./collectors/homeHealthCollect
 const { collect: windowsInsiderCollector } = require('./collectors/windowsInsiderCollector');
 const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
 const { publishBriefing } = require('./publishers/googleDrivePublisher');
+const { checkDockerSync } = require('./utils/dockerCheck');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 const SOURCES_FILE = path.join(__dirname, '../sources.yaml');
@@ -154,6 +155,8 @@ async function aggregate() {
     }
   }
 
+  const dockerWarnings = await checkDockerSync();
+
   const historyResult = newsResults.find(r => r.type === 'history');
   const tasksResult = newsResults.find(r => r.type === 'tasks');
   const seasonResult = newsResults.find(r => r.type === 'season');
@@ -172,8 +175,17 @@ async function aggregate() {
     season: seasonResult,
     homeHealth: homeHealthResult,
     summaries: {}, // Map of siteName -> htmlSummary
+    systemWarnings: [...dockerWarnings],
     systemWarning: null
   };
+
+  if (staleSources.length > 0) {
+    data.systemWarnings.push(`Connection failed for: ${staleSources.join(', ')}. Showing cached data.`);
+  }
+
+  if (data.systemWarnings.length > 0) {
+    data.systemWarning = data.systemWarnings.join(' | ');
+  }
 
   // 4. Conditional Ollama Integration (Per-Site)
   const ollamaUrl = process.env.OLLAMA_URL;
@@ -194,9 +206,8 @@ async function aggregate() {
 
     if (ollamaOffline) {
       console.warn(`[Aggregator] Ollama server is unreachable at ${ollamaUrl}. Skipping AI summaries.`);
-      data.systemWarning = "AI server is unreachable. Summaries may be missing or outdated.";
-    } else if (staleSources.length > 0) {
-      data.systemWarning = `Connection failed for: ${staleSources.join(', ')}. Showing cached data.`;
+      data.systemWarnings.push("AI server is unreachable. Summaries may be missing or outdated.");
+      data.systemWarning = data.systemWarnings.join(' | ');
     }
 
     if (forceSummarize) {
