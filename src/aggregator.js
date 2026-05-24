@@ -18,6 +18,7 @@ const { collect: seasonCollector } = require('./collectors/seasonCollector');
 const { collect: homeHealthCollector } = require('./collectors/homeHealthCollector');
 const { collect: windowsInsiderCollector } = require('./collectors/windowsInsiderCollector');
 const { formatRelativeDate, getBriefingRelativeDate } = require('./utils/formatters');
+const { publishBriefing } = require('./publishers/googleDrivePublisher');
 
 const CACHE_FILE = path.join(__dirname, '../data/cache.json');
 const SOURCES_FILE = path.join(__dirname, '../sources.yaml');
@@ -526,6 +527,19 @@ Summary:`;
     const html = await ejs.renderFile(TEMPLATE_FILE, { briefing: data });
     await fs.writeFile(PUBLIC_INDEX, html);
     console.log(`[Aggregator] Briefing rendered: ${PUBLIC_INDEX}`);
+
+    // 7. Publish to Targets
+    try {
+      if (sourcesConfig.targets && Array.isArray(sourcesConfig.targets)) {
+        for (const target of sourcesConfig.targets) {
+          if (target.type === 'googledrive' && target.enabled !== false) {
+            await publishBriefing(html, target);
+          }
+        }
+      }
+    } catch (pubErr) {
+      console.error("[Aggregator] Target publishing failed:", pubErr);
+    }
   } catch (err) {
     console.error("[Aggregator] Rendering failed:", err);
   }

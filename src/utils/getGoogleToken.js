@@ -32,7 +32,10 @@ const oauth2Client = new google.auth.OAuth2(
   REDIRECT_URI
 );
 
-const SCOPES = ['https://www.googleapis.com/auth/tasks.readonly'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/tasks.readonly',
+  'https://www.googleapis.com/auth/drive.file'
+];
 
 const authUrl = oauth2Client.generateAuthUrl({
   access_type: 'offline',

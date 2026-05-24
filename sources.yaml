@@ -181,3 +181,9 @@ sources:
       5. Summarize changes in active, direct voice.
       6. LINK FORMATTING: If you include a URL, format it as a markdown link with descriptive text (e.g., [View Release Details](url)). Never output a raw URL.
       </instructions>
+
+targets:
+  - name: "Google Drive"
+    type: "googledrive"
+    enabled: true
+    filename: "Daily Relay Briefing"
