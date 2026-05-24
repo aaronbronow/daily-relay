@@ -90,7 +90,8 @@
 ### Phase 7: Mobile & Agent Refinement
 - [x] **Condensed RSS UI**: Transitioned to a grid-based, high-density layout with metadata columns for superior scan speed (Complete).
 - [ ] **Mobile CSS**: Finalize "Reader Mode" CSS specifically for mobile Chrome and Safari.
-- [ ] **Gemini Sync**: (Optional) Add `rclone` script to push `index.html` to Google Drive for @Workspace chat access.
+- [x] **Google Drive Target**: Automatically uploads and converts the HTML briefing into a native Google Doc for native TTS "Listen to this document" support (Complete).
+- [ ] **Google Docs Design Polish**: Refine HTML structures (like stripping interactive menus/scripts) to optimize formatting and readability within Google Docs.
 
 ## 5. Metadata & Constraints
 - **Complexity Index (Cpx):** A 0-8 scale based on length (3pt), headings (2pt), links (2pt), and lists (1pt). Scores >= 3 trigger "Full Narration."
