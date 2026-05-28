@@ -176,7 +176,8 @@ async function aggregate() {
     homeHealth: homeHealthResult,
     summaries: {}, // Map of siteName -> htmlSummary
     systemWarnings: [...dockerWarnings],
-    systemWarning: null
+    systemWarning: null,
+    lastPublished: (cachedData && cachedData.lastPublished) ? cachedData.lastPublished : {}
   };
 
   if (staleSources.length > 0) {
@@ -542,10 +543,39 @@ Summary:`;
     // 7. Publish to Targets
     try {
       if (sourcesConfig.targets && Array.isArray(sourcesConfig.targets)) {
+        let publishedAny = false;
+        const now = new Date();
+        const todayStr = now.toLocaleDateString('en-CA');
+
         for (const target of sourcesConfig.targets) {
           if (target.type === 'googledrive' && target.enabled !== false) {
-            await publishBriefing(html, target);
+            // Respect daily publish limit if once_daily is configured
+            if (target.once_daily && !forceSummarize) {
+              const publishHour = target.publish_hour !== undefined ? target.publish_hour : 8;
+              if (now.getHours() < publishHour) {
+                console.log(`[Aggregator] Skipping target "${target.name}": current hour is before publish_hour (${publishHour}).`);
+                continue;
+              }
+              if (data.lastPublished && data.lastPublished[target.name] === todayStr) {
+                console.log(`[Aggregator] Skipping target "${target.name}": already published today (${todayStr}).`);
+                continue;
+              }
+            }
+
+            const success = await publishBriefing(html, target);
+            if (success) {
+              if (!data.lastPublished) {
+                data.lastPublished = {};
+              }
+              data.lastPublished[target.name] = todayStr;
+              publishedAny = true;
+            }
           }
+        }
+
+        if (publishedAny) {
+          await fs.writeFile(CACHE_FILE, JSON.stringify(data, null, 2));
+          console.log(`[Aggregator] Cache updated with new publishing timestamps: ${CACHE_FILE}`);
         }
       }
     } catch (pubErr) {

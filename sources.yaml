@@ -187,3 +187,5 @@ targets:
     type: "googledrive"
     enabled: true
     filename: "Daily Relay Briefing"
+    once_daily: true
+    publish_hour: 8

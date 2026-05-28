@@ -15,7 +15,7 @@ async function publishBriefing(htmlContent, targetConfig) {
 
   if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
     console.warn('[googleDrivePublisher] Missing Google credentials. Skipping Drive publishing.');
-    return;
+    return false;
   }
 
   const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
@@ -67,8 +67,10 @@ async function publishBriefing(htmlContent, targetConfig) {
 
       console.log(`[googleDrivePublisher] Successfully created "${filename}" (ID: ${createRes.data.id})`);
     }
+    return true;
   } catch (error) {
     console.error(`[googleDrivePublisher] Error publishing to Google Drive:`, error);
+    return false;
   }
 }
 
