@@ -13,13 +13,14 @@ app.use(express.static(PUBLIC_DIR));
 
 // SSE endpoint for auto-refresh
 let clients = [];
+let nextClientId = 0;
 app.get('/events', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const clientId = Date.now();
+    const clientId = nextClientId++;
     const newClient = { id: clientId, res };
     clients.push(newClient);
 
