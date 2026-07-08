@@ -364,6 +364,28 @@ async function aggregate() {
         
         // Summarize each item individually
         const itemSummaryPromises = siteData.items.map(async (item) => {
+          if (cachedData && cachedData.summaries && cachedData.summaries[siteData.site]) {
+            const cachedSite = cachedData.summaries[siteData.site];
+            if (cachedSite && Array.isArray(cachedSite.items)) {
+              const matchedCachedItem = cachedSite.items.find(cached => {
+                if (item.url && item.url.trim() !== '') {
+                  return item.url === cached.url;
+                }
+                return cached.title === item.title && cached.timestamp === item.timestamp;
+              });
+
+              if (matchedCachedItem) {
+                console.log(`[Aggregator] Reusing cached item summary for: "${item.title}"`);
+                const relativeDate = getBriefingRelativeDate(item.timestamp);
+                return {
+                  ...matchedCachedItem,
+                  metaDate: relativeDate,
+                  preamble: `${matchedCachedItem.metaSource} • ${relativeDate}`
+                };
+              }
+            }
+          }
+
           const isEmail = siteData.type === 'imap';
           const isGithub = siteData.type === 'github';
           
